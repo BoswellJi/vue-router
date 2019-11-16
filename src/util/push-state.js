@@ -5,11 +5,14 @@ import { saveScrollPosition } from './scroll'
 import { genStateKey, setStateKey, getStateKey } from './state-key'
 import { extend } from './misc'
 
+
+// 是否支持pushState
 export const supportsPushState =
   inBrowser &&
   (function () {
     const ua = window.navigator.userAgent
 
+    // 判断用户代理排除，是android 2. 或者 android 4.0  并且 
     if (
       (ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) &&
       ua.indexOf('Mobile Safari') !== -1 &&
@@ -19,6 +22,7 @@ export const supportsPushState =
       return false
     }
 
+    // 存在history对象和属性的
     return window.history && 'pushState' in window.history
   })()
 

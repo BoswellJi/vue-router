@@ -72,9 +72,12 @@ export function handleScroll (
   })
 }
 
+// 保存位置信息
 export function saveScrollPosition () {
+  // 获取状态key
   const key = getStateKey()
   if (key) {
+    // 添加位置信息
     positionStore[key] = {
       x: window.pageXOffset,
       y: window.pageYOffset
@@ -82,6 +85,9 @@ export function saveScrollPosition () {
   }
 }
 
+/**
+ * 获取之前保存的位置信息，垂直偏移，水平偏移
+ */
 function getScrollPosition (): ?Object {
   const key = getStateKey()
   if (key) {
@@ -89,20 +95,31 @@ function getScrollPosition (): ?Object {
   }
 }
 
+/**
+ * 获取元素
+ * @param {*} el dom元素
+ * @param {*} offset  偏移信息
+ */
 function getElementPosition (el: Element, offset: Object): Object {
+  // 缓存html dom节点
   const docEl: any = document.documentElement
+  // 获取html位置，尺寸
   const docRect = docEl.getBoundingClientRect()
+  // 获取指定dom
   const elRect = el.getBoundingClientRect()
+  // 获取元素距离html的下left,right
   return {
     x: elRect.left - docRect.left - offset.x,
     y: elRect.top - docRect.top - offset.y
   }
 }
 
+// 验证位置数据是否合格
 function isValidPosition (obj: Object): boolean {
   return isNumber(obj.x) || isNumber(obj.y)
 }
 
+// 
 function normalizePosition (obj: Object): Object {
   return {
     x: isNumber(obj.x) ? obj.x : window.pageXOffset,

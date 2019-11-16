@@ -13,38 +13,54 @@ export type Matcher = {
   addRoutes: (routes: Array<RouteConfig>) => void;
 };
 
+// 创建匹配
 export function createMatcher (
-  routes: Array<RouteConfig>,
-  router: VueRouter
+  routes: Array<RouteConfig>,  //路由线路
+  router: VueRouter  //路由器实例
 ): Matcher {
+  // 创建路由映射
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
 
   function addRoutes (routes) {
     createRouteMap(routes, pathList, pathMap, nameMap)
   }
 
+  /**
+   * 
+   * @param {*} raw  将要跳转到的url
+   * @param {*} currentRoute 当前路线信息
+   * @param {*} redirectedFrom 
+   */
   function match (
     raw: RawLocation,
     currentRoute?: Route,
-    redirectedFrom?: Location
+    redirectedFrom?: Location // url结构化
   ): Route {
+    // 当前url信息，当前路线信息，false,路由器,下一个地址信息
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
-
+    // 存在路线name
     if (name) {
+      // 获取对应的路线详情
       const record = nameMap[name]
       if (process.env.NODE_ENV !== 'production') {
         warn(record, `Route with name '${name}' does not exist`)
       }
+      // 不存在，创建一个路线
       if (!record) return _createRoute(null, location)
+      // 获取路由参数
       const paramNames = record.regex.keys
+      // 不可选参数
         .filter(key => !key.optional)
+        // 返回参数
         .map(key => key.name)
 
+      // 路由参数不为对象,重新赋值为对象
       if (typeof location.params !== 'object') {
         location.params = {}
       }
 
+      // 
       if (currentRoute && typeof currentRoute.params === 'object') {
         for (const key in currentRoute.params) {
           if (!(key in location.params) && paramNames.indexOf(key) > -1) {
@@ -54,7 +70,9 @@ export function createMatcher (
       }
 
       location.path = fillParams(record.path, location.params, `named route "${name}"`)
+      // 根据定义的下一个路由的record,与当前路由信息,进行和成新路线
       return _createRoute(record, location, redirectedFrom)
+      // 
     } else if (location.path) {
       location.params = {}
       for (let i = 0; i < pathList.length; i++) {
@@ -155,6 +173,7 @@ export function createMatcher (
     location: Location,
     redirectedFrom?: Location
   ): Route {
+    // 
     if (record && record.redirect) {
       return redirect(record, redirectedFrom || location)
     }

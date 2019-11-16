@@ -11,9 +11,12 @@ export class HTML5History extends History {
   constructor (router: Router, base: ?string) {
     super(router, base)
 
+    // 获取配置的路由器滚动行为
     const expectScroll = router.options.scrollBehavior
+    // 是否支持h5的history api 并且存在滚动行为
     const supportsScroll = supportsPushState && expectScroll
 
+    // 调用
     if (supportsScroll) {
       setupScroll()
     }
@@ -71,10 +74,15 @@ export class HTML5History extends History {
   }
 }
 
+// 获取当前url
 export function getLocation (base: string): string {
+  // 路径，解码
   let path = decodeURI(window.location.pathname)
+  // 路径中时候匹配路由，这个是html5的history
   if (base && path.indexOf(base) === 0) {
+    // 取非base字符串部分
     path = path.slice(base.length)
   }
+  // 路径+查询字符串+哈希
   return (path || '/') + window.location.search + window.location.hash
 }

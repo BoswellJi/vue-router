@@ -7,6 +7,7 @@ const Time =
     ? window.performance
     : Date
 
+    // 当前时间毫秒数，保留三位小数
 export function genStateKey (): string {
   return Time.now().toFixed(3)
 }

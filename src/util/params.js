@@ -4,6 +4,7 @@ import { warn } from './warn'
 import Regexp from 'path-to-regexp'
 
 // $flow-disable-line
+// 创建缓存变量
 const regexpCompileCache: {
   [key: string]: Function
 } = Object.create(null)
@@ -15,11 +16,13 @@ export function fillParams (
 ): string {
   params = params || {}
   try {
+    // 将路径编译结果进行缓存
     const filler =
       regexpCompileCache[path] ||
       (regexpCompileCache[path] = Regexp.compile(path))
 
     // Fix #2505 resolving asterisk routes { name: 'not-found', params: { pathMatch: '/not-found' }}
+    // 参数
     if (params.pathMatch) params[0] = params.pathMatch
 
     return filler(params, { pretty: true })

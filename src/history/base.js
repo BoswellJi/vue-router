@@ -67,6 +67,7 @@ export class History {
     onComplete?: Function,
     onAbort?: Function
   ) {
+    // 匹配到路径
     const route = this.router.match(location, this.current)
     this.confirmTransition(
       route,
@@ -97,6 +98,7 @@ export class History {
     )
   }
 
+  // 提示过度,路线
   confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
     const current = this.current
     const abort = err => {
@@ -116,15 +118,18 @@ export class History {
       }
       onAbort && onAbort(err)
     }
+    // 下一个路线与当前是同一个,丢弃导航
     if (
       isSameRoute(route, current) &&
       // in the case the route map has been dynamically appended to
       route.matched.length === current.matched.length
     ) {
+      // 安全url
       this.ensureURL()
       return abort(new NavigationDuplicated(route))
     }
 
+    // 解析出队列
     const { updated, deactivated, activated } = resolveQueue(
       this.current.matched,
       route.matched
@@ -223,6 +228,7 @@ function normalizeBase (base: ?string): string {
     }
   }
   // make sure there's the starting slash
+  // 根路径
   if (base.charAt(0) !== '/') {
     base = '/' + base
   }
@@ -240,7 +246,9 @@ function resolveQueue (
 } {
   let i
   const max = Math.max(current.length, next.length)
+  // 比较路线信息的相同部分
   for (i = 0; i < max; i++) {
+    // 不同时候断开
     if (current[i] !== next[i]) {
       break
     }
@@ -284,6 +292,7 @@ function extractLeaveGuards (deactivated: Array<RouteRecord>): Array<?Function> 
   return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
 }
 
+// 提取路由更新
 function extractUpdateHooks (updated: Array<RouteRecord>): Array<?Function> {
   return extractGuards(updated, 'beforeRouteUpdate', bindGuard)
 }

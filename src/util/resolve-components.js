@@ -69,10 +69,12 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   }
 }
 
+
 export function flatMapComponents (
   matched: Array<RouteRecord>,
   fn: Function
 ): Array<?Function> {
+  // 组件
   return flatten(matched.map(m => {
     return Object.keys(m.components).map(key => fn(
       m.components[key],
@@ -82,6 +84,7 @@ export function flatMapComponents (
   }))
 }
 
+// 数组concat函数盗用，将函数打平
 export function flatten (arr: Array<any>): Array<any> {
   return Array.prototype.concat.apply([], arr)
 }

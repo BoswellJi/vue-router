@@ -4,6 +4,15 @@ import Regexp from 'path-to-regexp'
 import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
+
+/**
+ * 
+ * @param {*} routes  路由规则
+ * @param {*} oldPathList 
+ * @param {*} oldPathMap 
+ * @param {*} oldNameMap 
+ */
+// 将路由配置转换成路由映射表
 export function createRouteMap (
   routes: Array<RouteConfig>,
   oldPathList?: Array<string>,
@@ -14,19 +23,27 @@ export function createRouteMap (
   pathMap: Dictionary<RouteRecord>,
   nameMap: Dictionary<RouteRecord>
 } {
-  // the path list is used to control path matching priority
+  // the path list is used to control path matching priority(权重)
   const pathList: Array<string> = oldPathList || []
   // $flow-disable-line
   const pathMap: Dictionary<RouteRecord> = oldPathMap || Object.create(null)
   // $flow-disable-line
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
 
+  /**
+   * const routes = [
+    { path: '/foo', component: Foo },
+    { path: '/bar', component: Bar }
+  ]
+   */
   routes.forEach(route => {
+    // 添加路由纪录
     addRouteRecord(pathList, pathMap, nameMap, route)
   })
 
   // ensure wildcard routes are always at the end
   for (let i = 0, l = pathList.length; i < l; i++) {
+    //匹配到开放路径，放到最后
     if (pathList[i] === '*') {
       pathList.push(pathList.splice(i, 1)[0])
       l--
@@ -53,14 +70,29 @@ export function createRouteMap (
   }
 }
 
+
+/**
+ * 
+ * @param {*} pathList  路径列表
+ * @param {*} pathMap  路径映射到路径纪录
+ * @param {*} nameMap 名称映射到路径纪录
+ * @param {*} route 路线
+ * @param {*} parent 父路径
+ * @param {*} matchAs 
+ */
 function addRouteRecord (
-  pathList: Array<string>,
-  pathMap: Dictionary<RouteRecord>,
-  nameMap: Dictionary<RouteRecord>,
-  route: RouteConfig,
+  pathList: Array<string>,  //路径列表
+  pathMap: Dictionary<RouteRecord>, //路径映射
+  nameMap: Dictionary<RouteRecord>, //name映射
+  route: RouteConfig, //
   parent?: RouteRecord,
   matchAs?: string
 ) {
+  /**
+   * 路线配置
+   * path
+   * name
+   */
   const { path, name } = route
   if (process.env.NODE_ENV !== 'production') {
     assert(path != null, `"path" is required in a route configuration.`)
@@ -72,10 +104,12 @@ function addRouteRecord (
     )
   }
 
+  // 开放给配置
   const pathToRegexpOptions: PathToRegexpOptions =
     route.pathToRegexpOptions || {}
   const normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict)
 
+  // 是否大小写敏感
   if (typeof route.caseSensitive === 'boolean') {
     pathToRegexpOptions.sensitive = route.caseSensitive
   }
@@ -104,9 +138,11 @@ function addRouteRecord (
     // If users navigate to this route by name, the default child will
     // not be rendered (GH Issue #629)
     if (process.env.NODE_ENV !== 'production') {
+      /** 路线有名称，但是没有重定向名称，子路线 */
       if (
         route.name &&
         !route.redirect &&
+        // 有/零个或者1个，（路由名称导航，默认不渲染子组件
         route.children.some(child => /^\/?$/.test(child.path))
       ) {
         warn(
@@ -121,23 +157,46 @@ function addRouteRecord (
         )
       }
     }
+   
     route.children.forEach(child => {
       const childMatchAs = matchAs
         ? cleanPath(`${matchAs}/${child.path}`)
         : undefined
+        // 将嵌套的子路线，处理到父路由同级
       addRouteRecord(pathList, pathMap, nameMap, child, record, childMatchAs)
     })
   }
 
+  /**
+   * routerConfig
+   * [
+   *   {path:'/a',name:'a',components:a,childrend:[{ path:'/b',name:'b',components:b }]}
+   * ]
+   * 
+   *  pathList
+   * [
+   *    '/a',
+   *    '/a/b' 
+   * ]
+   * 
+   * pathMap
+   * {
+   *  '/a':{path:'/a'},
+   *  '/a/b':{path:'/a/b'}
+   * }
+   */
   if (!pathMap[record.path]) {
     pathList.push(record.path)
     pathMap[record.path] = record
   }
 
+  // 路线别名
   if (route.alias !== undefined) {
+    // 将别名转换为数组
     const aliases = Array.isArray(route.alias) ? route.alias : [route.alias]
     for (let i = 0; i < aliases.length; ++i) {
       const alias = aliases[i]
+      // 别名不能根路径相同
       if (process.env.NODE_ENV !== 'production' && alias === path) {
         warn(
           false,
@@ -147,6 +206,7 @@ function addRouteRecord (
         continue
       }
 
+      // 根据别名配置路线信息与路径相同处理
       const aliasRoute = {
         path: alias,
         children: route.children
@@ -162,10 +222,19 @@ function addRouteRecord (
     }
   }
 
+  /**
+   * 路线有name
+   * {
+   *   'a':{path:'/a'}
+   * }
+   */ 
   if (name) {
+    // 不存在
     if (!nameMap[name]) {
+      // 添加
       nameMap[name] = record
     } else if (process.env.NODE_ENV !== 'production' && !matchAs) {
+
       warn(
         false,
         `Duplicate named routes definition: ` +
@@ -182,6 +251,7 @@ function compileRouteRegex (
   const regex = Regexp(path, [], pathToRegexpOptions)
   if (process.env.NODE_ENV !== 'production') {
     const keys: any = Object.create(null)
+    // 路由参数
     regex.keys.forEach(key => {
       warn(
         !keys[key.name],
@@ -198,8 +268,11 @@ function normalizePath (
   parent?: RouteRecord,
   strict?: boolean
 ): string {
+  // 非严格下，将/ 替换为''
   if (!strict) path = path.replace(/\/$/, '')
+
   if (path[0] === '/') return path
   if (parent == null) return path
+  // 
   return cleanPath(`${parent.path}/${path}`)
 }

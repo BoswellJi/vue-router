@@ -41,11 +41,16 @@ export default class VueRouter {
     this.afterHooks = []
     this.matcher = createMatcher(options.routes || [], this)
 
+    // 确定路由模式
+    // 路由模式
     let mode = options.mode || 'hash'
+    // html5路由模式 并且不支持并且fallback不为false
     this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
+    // 有
     if (this.fallback) {
       mode = 'hash'
     }
+    // 不在浏览器
     if (!inBrowser) {
       mode = 'abstract'
     }
@@ -68,6 +73,7 @@ export default class VueRouter {
     }
   }
 
+  // 当前url信息和当前路线信息，进行匹配
   match (
     raw: RawLocation,
     current?: Route,
@@ -87,10 +93,12 @@ export default class VueRouter {
       `before creating root instance.`
     )
 
+    // 多组件
     this.apps.push(app)
 
     // set up app destroyed handler
     // https://github.com/vuejs/vue-router/issues/2639
+    // 自定义事件监听
     app.$once('hook:destroyed', () => {
       // clean out app from this.apps array once destroyed
       const index = this.apps.indexOf(app)
@@ -106,10 +114,13 @@ export default class VueRouter {
       return
     }
 
+    // 根组件
     this.app = app
 
+    // 不同的路由方案实例
     const history = this.history
 
+    // html5方案实例
     if (history instanceof HTML5History) {
       history.transitionTo(history.getCurrentLocation())
     } else if (history instanceof HashHistory) {
@@ -117,12 +128,12 @@ export default class VueRouter {
         history.setupListeners()
       }
       history.transitionTo(
-        history.getCurrentLocation(),
-        setupHashListener,
+        history.getCurrentLocation(), //传入当前地址
+        setupHashListener, //
         setupHashListener
       )
     }
-
+    
     history.listen(route => {
       this.apps.forEach((app) => {
         app._route = route

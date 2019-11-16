@@ -5,6 +5,13 @@ import { stringifyQuery } from './query'
 
 const trailingSlashRE = /\/?$/
 
+/**
+ * 根据url信息，路线纪录，创建 路线
+ * @param {*} record 
+ * @param {*} location 
+ * @param {*} redirectedFrom 
+ * @param {*} router 
+ */
 export function createRoute (
   record: ?RouteRecord,
   location: Location,
@@ -53,6 +60,10 @@ export const START = createRoute(null, {
   path: '/'
 })
 
+/**
+ * 整条路线的节点，子-》父
+ * @param {*} record 
+ */
 function formatMatch (record: ?RouteRecord): Array<RouteRecord> {
   const res = []
   while (record) {
