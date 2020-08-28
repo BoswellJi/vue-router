@@ -23,6 +23,13 @@ export function setupScroll () {
   })
 }
 
+/**
+ *
+ * @param {*} router
+ * @param {*} to
+ * @param {*} from
+ * @param {*} isPop
+ */
 export function handleScroll (
   router: Router,
   to: Route,
@@ -119,7 +126,7 @@ function isValidPosition (obj: Object): boolean {
   return isNumber(obj.x) || isNumber(obj.y)
 }
 
-// 
+//
 function normalizePosition (obj: Object): Object {
   return {
     x: isNumber(obj.x) ? obj.x : window.pageXOffset,

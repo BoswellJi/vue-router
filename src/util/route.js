@@ -3,14 +3,15 @@
 import type VueRouter from '../index'
 import { stringifyQuery } from './query'
 
+// /?
 const trailingSlashRE = /\/?$/
 
 /**
- * 根据url信息，路线纪录，创建 路线
- * @param {*} record 
- * @param {*} location 
- * @param {*} redirectedFrom 
- * @param {*} router 
+ * 根据url信息，路线纪录，创建路线
+ * @param {*} record
+ * @param {*} location
+ * @param {*} redirectedFrom
+ * @param {*} router
  */
 export function createRoute (
   record: ?RouteRecord,
@@ -25,6 +26,7 @@ export function createRoute (
     query = clone(query)
   } catch (e) {}
 
+  // 路线对象字段
   const route: Route = {
     name: location.name || (record && record.name),
     meta: (record && record.meta) || {},
@@ -62,7 +64,7 @@ export const START = createRoute(null, {
 
 /**
  * 整条路线的节点，子-》父
- * @param {*} record 
+ * @param {*} record
  */
 function formatMatch (record: ?RouteRecord): Array<RouteRecord> {
   const res = []

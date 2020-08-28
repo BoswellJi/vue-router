@@ -10,10 +10,8 @@ export function install (Vue) {
 
   _Vue = Vue
 
-  // 不===undefined
   const isDef = v => v !== undefined
 
-  // 
   const registerInstance = (vm, callVal) => {
     // 组件是否有父组件
     let i = vm.$options._parentVnode
@@ -24,9 +22,9 @@ export function install (Vue) {
 
   // Vue mixin,添加全局混入
   Vue.mixin({
-    // 
+    //
     beforeCreate () {
-      //已加入router:路由器实例
+      // 已加入router:路由器实例
       // 只有根组件才有router
       if (isDef(this.$options.router)) {
         // 根组件
@@ -58,7 +56,6 @@ export function install (Vue) {
   Object.defineProperty(Vue.prototype, '$route', {
     get () { return this._routerRoot._route }
   })
-
 
   // 组测内部组件(路由视图与路由链接)
   Vue.component('RouterView', View)

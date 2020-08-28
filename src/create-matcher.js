@@ -13,23 +13,24 @@ export type Matcher = {
   addRoutes: (routes: Array<RouteConfig>) => void;
 };
 
-// 创建匹配
+// 创建匹配器
 export function createMatcher (
-  routes: Array<RouteConfig>,  //路由线路
-  router: VueRouter  //路由器实例
+  routes: Array<RouteConfig>,  // 路由线路配置
+  router: VueRouter  // 路由器实例
 ): Matcher {
   // 创建路由映射
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
 
+  // 添加路线
   function addRoutes (routes) {
     createRouteMap(routes, pathList, pathMap, nameMap)
   }
 
   /**
-   * 
+   *
    * @param {*} raw  将要跳转到的url
    * @param {*} currentRoute 当前路线信息
-   * @param {*} redirectedFrom 
+   * @param {*} redirectedFrom
    */
   function match (
     raw: RawLocation,
@@ -60,7 +61,7 @@ export function createMatcher (
         location.params = {}
       }
 
-      // 
+      //
       if (currentRoute && typeof currentRoute.params === 'object') {
         for (const key in currentRoute.params) {
           if (!(key in location.params) && paramNames.indexOf(key) > -1) {
@@ -72,7 +73,7 @@ export function createMatcher (
       location.path = fillParams(record.path, location.params, `named route "${name}"`)
       // 根据定义的下一个路由的record,与当前路由信息,进行和成新路线
       return _createRoute(record, location, redirectedFrom)
-      // 
+      //
     } else if (location.path) {
       location.params = {}
       for (let i = 0; i < pathList.length; i++) {
@@ -173,7 +174,7 @@ export function createMatcher (
     location: Location,
     redirectedFrom?: Location
   ): Route {
-    // 
+    //
     if (record && record.redirect) {
       return redirect(record, redirectedFrom || location)
     }

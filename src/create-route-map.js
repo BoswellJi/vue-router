@@ -4,15 +4,13 @@ import Regexp from 'path-to-regexp'
 import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
-
 /**
- * 
+ * 将路由配置转换成路由映射表
  * @param {*} routes  路由规则
- * @param {*} oldPathList 
- * @param {*} oldPathMap 
- * @param {*} oldNameMap 
+ * @param {*} oldPathList
+ * @param {*} oldPathMap
+ * @param {*} oldNameMap
  */
-// 将路由配置转换成路由映射表
 export function createRouteMap (
   routes: Array<RouteConfig>,
   oldPathList?: Array<string>,
@@ -26,15 +24,17 @@ export function createRouteMap (
   // the path list is used to control path matching priority(权重)
   const pathList: Array<string> = oldPathList || []
   // $flow-disable-line
+  // 路径映射 /a
   const pathMap: Dictionary<RouteRecord> = oldPathMap || Object.create(null)
+  // 名称映射 a
   // $flow-disable-line
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
 
   /**
-   * const routes = [
-    { path: '/foo', component: Foo },
-    { path: '/bar', component: Bar }
-  ]
+    const routes = [
+      { path: '/foo', name:'foo', component: Foo },
+      { path: '/bar', name:'bar', component: Bar }
+    ]
    */
   routes.forEach(route => {
     // 添加路由纪录
@@ -43,7 +43,7 @@ export function createRouteMap (
 
   // ensure wildcard routes are always at the end
   for (let i = 0, l = pathList.length; i < l; i++) {
-    //匹配到开放路径，放到最后
+    // 匹配到开放路径，放到最后
     if (pathList[i] === '*') {
       pathList.push(pathList.splice(i, 1)[0])
       l--
@@ -70,20 +70,19 @@ export function createRouteMap (
   }
 }
 
-
 /**
- * 
+ * 添加路由记录
  * @param {*} pathList  路径列表
  * @param {*} pathMap  路径映射到路径纪录
  * @param {*} nameMap 名称映射到路径纪录
  * @param {*} route 路线
  * @param {*} parent 父路径
- * @param {*} matchAs 
+ * @param {*} matchAs
  */
 function addRouteRecord (
-  pathList: Array<string>,  //路径列表
-  pathMap: Dictionary<RouteRecord>, //路径映射
-  nameMap: Dictionary<RouteRecord>, //name映射
+  pathList: Array<string>,  // 路径列表
+  pathMap: Dictionary<RouteRecord>, // 路径映射
+  nameMap: Dictionary<RouteRecord>, // name映射
   route: RouteConfig, //
   parent?: RouteRecord,
   matchAs?: string
@@ -114,6 +113,7 @@ function addRouteRecord (
     pathToRegexpOptions.sensitive = route.caseSensitive
   }
 
+  // 一条路由记录的所有信息
   const record: RouteRecord = {
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
@@ -157,7 +157,7 @@ function addRouteRecord (
         )
       }
     }
-   
+
     route.children.forEach(child => {
       const childMatchAs = matchAs
         ? cleanPath(`${matchAs}/${child.path}`)
@@ -172,13 +172,13 @@ function addRouteRecord (
    * [
    *   {path:'/a',name:'a',components:a,childrend:[{ path:'/b',name:'b',components:b }]}
    * ]
-   * 
+   *
    *  pathList
    * [
    *    '/a',
-   *    '/a/b' 
+   *    '/a/b'
    * ]
-   * 
+   *
    * pathMap
    * {
    *  '/a':{path:'/a'},
@@ -227,14 +227,13 @@ function addRouteRecord (
    * {
    *   'a':{path:'/a'}
    * }
-   */ 
+   */
   if (name) {
     // 不存在
     if (!nameMap[name]) {
       // 添加
       nameMap[name] = record
     } else if (process.env.NODE_ENV !== 'production' && !matchAs) {
-
       warn(
         false,
         `Duplicate named routes definition: ` +
@@ -273,6 +272,6 @@ function normalizePath (
 
   if (path[0] === '/') return path
   if (parent == null) return path
-  // 
+  //
   return cleanPath(`${parent.path}/${path}`)
 }

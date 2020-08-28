@@ -31,10 +31,15 @@ export class History {
   +ensureURL: (push?: boolean) => void
   +getCurrentLocation: () => string
 
+  /**
+ * 路由实例
+ * 路由根路径
+ */
   constructor (router: Router, base: ?string) {
     this.router = router
     this.base = normalizeBase(base)
     // start with a route object that stands for "nowhere"
+    // 当前路线
     this.current = START
     this.pending = null
     this.ready = false
@@ -64,10 +69,10 @@ export class History {
 
   transitionTo (
     location: RawLocation,
-    onComplete?: Function,
-    onAbort?: Function
+    onComplete ?: Function,
+    onAbort ?: Function
   ) {
-    // 匹配到路径
+  // 匹配到路径
     const route = this.router.match(location, this.current)
     this.confirmTransition(
       route,
@@ -99,13 +104,14 @@ export class History {
   }
 
   // 提示过度,路线
-  confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
+  confirmTransition (route: Route, onComplete: Function, onAbort ?: Function) {
+  // 获取当前路由
     const current = this.current
     const abort = err => {
-      // after merging https://github.com/vuejs/vue-router/pull/2771 we
-      // When the user navigates through history through back/forward buttons
-      // we do not want to throw the error. We only throw it if directly calling
-      // push/replace. That's why it's not included in isError
+    // after merging https://github.com/vuejs/vue-router/pull/2771 we
+    // When the user navigates through history through back/forward buttons
+    // we do not want to throw the error. We only throw it if directly calling
+    // push/replace. That's why it's not included in isError
       if (!isExtendedError(NavigationDuplicated, err) && isError(err)) {
         if (this.errorCbs.length) {
           this.errorCbs.forEach(cb => {
@@ -121,10 +127,11 @@ export class History {
     // 下一个路线与当前是同一个,丢弃导航
     if (
       isSameRoute(route, current) &&
-      // in the case the route map has been dynamically appended to
-      route.matched.length === current.matched.length
+    // 已经被动态添加的路由映射
+    // in the case the route map has been dynamically appended to
+    route.matched.length === current.matched.length
     ) {
-      // 安全url
+    // 安全url
       this.ensureURL()
       return abort(new NavigationDuplicated(route))
     }
@@ -135,8 +142,9 @@ export class History {
       route.matched
     )
 
+    // 路由守护
     const queue: Array<?NavigationGuard> = [].concat(
-      // in-component leave guards
+    // in-component leave guards
       extractLeaveGuards(deactivated),
       // global before hooks
       this.router.beforeHooks,
@@ -156,15 +164,15 @@ export class History {
       try {
         hook(route, current, (to: any) => {
           if (to === false || isError(to)) {
-            // next(false) -> abort navigation, ensure current URL
+          // next(false) -> abort navigation, ensure current URL
             this.ensureURL(true)
             abort(to)
           } else if (
             typeof to === 'string' ||
-            (typeof to === 'object' &&
-              (typeof to.path === 'string' || typeof to.name === 'string'))
+          (typeof to === 'object' &&
+            (typeof to.path === 'string' || typeof to.name === 'string'))
           ) {
-            // next('/') or next({ path: '/' }) -> redirect
+          // next('/') or next({ path: '/' }) -> redirect
             abort()
             if (typeof to === 'object' && to.replace) {
               this.replace(to)
@@ -172,7 +180,7 @@ export class History {
               this.push(to)
             }
           } else {
-            // confirm transition and pass on the value
+          // confirm transition and pass on the value
             next(to)
           }
         })
@@ -180,9 +188,12 @@ export class History {
         abort(e)
       }
     }
-
+    /**
+   * 运行队列
+   */
     runQueue(queue, iterator, () => {
       const postEnterCbs = []
+      // 当前路由是否有效
       const isValid = () => this.current === route
       // wait until async components are resolved before
       // extracting in-component enter guards
@@ -206,24 +217,34 @@ export class History {
   }
 
   updateRoute (route: Route) {
+  // 更新路由
     const prev = this.current
     this.current = route
     this.cb && this.cb(route)
+    // 调用路由
     this.router.afterHooks.forEach(hook => {
       hook && hook(route, prev)
     })
   }
 }
 
+/**
+ * 规范化路径
+ * @param {*} base
+ */
 function normalizeBase (base: ?string): string {
+  // 没有配置
   if (!base) {
+    // 浏览器中
     if (inBrowser) {
       // respect <base> tag
+      // 获取base标签的根路径配置
       const baseEl = document.querySelector('base')
       base = (baseEl && baseEl.getAttribute('href')) || '/'
-      // strip full URL origin
+      // strip full URL origin 将https://fg
       base = base.replace(/^https?:\/\/[^\/]+/, '')
     } else {
+      // 默认为空
       base = '/'
     }
   }

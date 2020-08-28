@@ -3,6 +3,10 @@
 import { _Vue } from '../install'
 import { warn, isError } from './warn'
 
+/**
+ * 解析异步组件
+ * @param {*} matched
+ */
 export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   return (to, from, next) => {
     let hasAsync = false
@@ -68,7 +72,6 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
     if (!hasAsync) next()
   }
 }
-
 
 export function flatMapComponents (
   matched: Array<RouteRecord>,

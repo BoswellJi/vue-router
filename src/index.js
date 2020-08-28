@@ -41,16 +41,15 @@ export default class VueRouter {
     this.afterHooks = []
     this.matcher = createMatcher(options.routes || [], this)
 
-    // 确定路由模式
-    // 路由模式
+    // 确定路由模式 hash || history
     let mode = options.mode || 'hash'
-    // html5路由模式 并且不支持并且fallback不为false
+    // 设置了history路由模式，但是不支持
     this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
-    // 有
+
     if (this.fallback) {
       mode = 'hash'
     }
-    // 不在浏览器
+    // 不在浏览器，服务器端
     if (!inBrowser) {
       mode = 'abstract'
     }
@@ -82,10 +81,17 @@ export default class VueRouter {
     return this.matcher.match(raw, current, redirectedFrom)
   }
 
+  /**
+   * 获取当前路线
+   */
   get currentRoute (): ?Route {
     return this.history && this.history.current
   }
 
+  /**
+   * 初始化
+   * @param {*} app
+   */
   init (app: any /* Vue component instance */) {
     process.env.NODE_ENV !== 'production' && assert(
       install.installed,
@@ -128,12 +134,12 @@ export default class VueRouter {
         history.setupListeners()
       }
       history.transitionTo(
-        history.getCurrentLocation(), //传入当前地址
+        history.getCurrentLocation(), // 传入当前地址
         setupHashListener, //
         setupHashListener
       )
     }
-    
+
     history.listen(route => {
       this.apps.forEach((app) => {
         app._route = route
@@ -268,6 +274,7 @@ function createHref (base: string, fullPath: string, mode) {
 VueRouter.install = install
 VueRouter.version = '__VERSION__'
 
+// 浏览器环境下 && 全局变量Vue
 if (inBrowser && window.Vue) {
   window.Vue.use(VueRouter)
 }
