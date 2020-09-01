@@ -7,14 +7,20 @@ import { fillParams } from './params'
 import { warn } from './warn'
 import { extend } from './misc'
 
-// 序列化url
+/**
+ * 规范化位置
+ * @param {*} raw string | Location实例
+ * @param {*} current 当前路线
+ * @param {*} append 是否添加
+ * @param {*} router 路由器实例
+ */
 export function normalizeLocation (
   raw: RawLocation,
   current: ?Route,
   append: ?boolean,
   router: ?VueRouter
 ): Location {
-  // 地址为字符串,返回对象,否则返回自身
+  // 整理为object
   let next: Location = typeof raw === 'string' ? { path: raw } : raw
   // named target
   // 已经被序列化的,返回自身
@@ -74,17 +80,13 @@ export function normalizeLocation (
     router && router.options.parseQuery
   )
 
-  // 
   let hash = next.hash || parsedPath.hash
   // 当前哈希第一个字符不是#,就添加上
   if (hash && hash.charAt(0) !== '#') {
     hash = `#${hash}`
   }
 
-  /**
-   * 到这里就序列化过了
-   * 
-   */
+  // 获取/parent#/parent/foo的解析参数
   return {
     _normalized: true,
     path,

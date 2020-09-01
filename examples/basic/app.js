@@ -16,6 +16,8 @@ const Unicode = { template: '<div>unicode</div>' }
 const router = new VueRouter({
   mode: 'history',
   base: __dirname,
+  linkActiveClass:'jmz',
+  linkExactActiveClass:'jmzExact',
   routes: [
     { path: '/', component: Home },
     { path: '/foo', component: Foo },
@@ -23,6 +25,8 @@ const router = new VueRouter({
     { path: '/é', component: Unicode }
   ]
 })
+
+console.log(router);
 
 // 4. Create and mount root instance.
 // Make sure to inject the router.
@@ -59,6 +63,7 @@ new Vue({
 
   methods: {
     navigateAndIncrement () {
+      
       const increment = () => this.n++
       if (this.$route.path === '/') {
         this.$router.push('/foo', increment)

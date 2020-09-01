@@ -12,7 +12,11 @@ const Users = {
       <h2>Users</h2>
       <router-view></router-view>
     </div>
-  `
+  `,
+  // 给组件的路由的钩子函数
+  beforeRouteEnter(...args){
+    console.log(args);
+  },
 }
 
 const User = { template: '<div>{{ $route.params.username }}</div>' }
@@ -31,13 +35,26 @@ const Image = { template: '<div>{{ $route.params.imageId }}</div>' }
 const router = new VueRouter({
   mode: 'history',
   base: __dirname,
+  scrollBehavior(...args){
+    console.log(args);
+    return {
+      selector:'#',
+      offset:{
+        x : 0,
+        y : 0
+      }
+    };
+  },
   routes: [
     { path: '/', component: Home },
     { path: '/about', component: About },
     {
       path: '/redirect-gallery',
       name: 'redirect-gallery',
-      redirect: { name: 'gallery' }
+      redirect: { name: 'gallery' },
+      beforeRouteEnter(...args){
+        console.log(args)
+      }
     },
     {
       path: '/redirect-image',
@@ -64,8 +81,13 @@ const router = new VueRouter({
   ]
 })
 
+router.afterEach((...args)=>{
+  // console.log(args);
+})
+
 new Vue({
   router,
+  
   template: `
     <div id="app">
       <h1>Active Links</h1>

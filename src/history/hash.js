@@ -22,6 +22,7 @@ export class HashHistory extends History {
     ensureSlash()
   }
 
+  // 延迟直到app安装后，避免hashchange时间被太早触发
   // this is delayed until the app mounts
   // to avoid the hashchange listener being fired too early
   setupListeners () {
@@ -29,17 +30,22 @@ export class HashHistory extends History {
     const router = this.router
     // 是否配置滚动方法
     const expectScroll = router.options.scrollBehavior
+    // 支持滚动 = 支持pushState方法 && 存在用户自定义滚动行为
     const supportsScroll = supportsPushState && expectScroll
 
+    // 安装滚动
     if (supportsScroll) {
       setupScroll()
     }
 
     window.addEventListener(
-      // 根据pushState支持程度
+      // 根据pushState支持程度 
+      // 只有在做出浏览器动作时：
+      // 1. Javascript代码中调用history.back()或者history.forward()方法）
+      // 2. 带href属性的a,前进，后退按钮
       supportsPushState ? 'popstate' : 'hashchange',
       () => {
-        // 当前路由
+        // 当前线路
         const current = this.current
         if (!ensureSlash()) {
           return
@@ -87,7 +93,7 @@ export class HashHistory extends History {
   go (n: number) {
     window.history.go(n)
   }
-
+  
   ensureURL (push?: boolean) {
     const current = this.current.fullPath
     if (getHash() !== current) {
@@ -104,8 +110,8 @@ export class HashHistory extends History {
 }
 
 /**
- * 检查反馈
- * @param {*} base 根路径
+ * 检查回退
+ * @param {*} base 基础路径
  */
 function checkFallback (base) {
   const location = getLocation(base)
@@ -118,7 +124,8 @@ function checkFallback (base) {
 }
 
 /**
- * 确保框架路径
+ * 确保路径为绝对的
+ * 原因： http://localhost:8080/scroll-behavior/#/bar，的hash为绝对路径，线路的路径
  */
 function ensureSlash (): boolean {
   // 获取路径中的hash字符串
@@ -127,7 +134,7 @@ function ensureSlash (): boolean {
   if (path.charAt(0) === '/') {
     return true
   }
-  //
+  // 添加 / 变为绝对路径
   replaceHash('/' + path)
   return false
 }

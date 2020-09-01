@@ -48,20 +48,21 @@ const router = new VueRouter({
   mode: 'history',
   base: __dirname,
   routes: [
-    { path: '/', redirect: '/parent' },
+    { path: '/', redirect: '/parent', alias:'/jmz', meta:'meta' },
     {
       path: '/parent',
       component: Parent,
+      alias:'/jmz1',
       children: [
         // an empty path will be treated as the default, e.g.
         // components rendered at /parent: Root -> Parent -> Default
-        { path: '', component: Default },
+        { path: '', component: Default,  name:'j1', alias:'jmz1'},
 
         // components rendered at /parent/foo: Root -> Parent -> Foo
-        { path: 'foo', component: Foo },
+        { path: 'foo', component: Foo,name:'j2' },
 
         // components rendered at /parent/bar: Root -> Parent -> Bar
-        { path: 'bar', component: Bar },
+        { path: 'bar', component: Bar,name:'j3' },
 
         // NOTE absolute path here!
         // this allows you to leverage the component nesting without being

@@ -4,29 +4,42 @@ import { _Vue } from '../install'
 import { warn, isError } from './warn'
 
 /**
- * 解析异步组件
- * @param {*} matched
+ * 解析异步组件，处理懒加载使用
+ * @param {*} matched 线路
  */
 export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
+  // 目的线路 来源线路 下一个方法
   return (to, from, next) => {
     let hasAsync = false
     let pending = 0
     let error = null
 
+    /**
+     * 组件实例 实例属性 线路 组件的key{default: <div> jmz </div>}
+     */
     flatMapComponents(matched, (def, _, match, key) => {
+      // 如果他是一个函数和没有粘合cid
       // if it's a function and doesn't have cid attached,
+      // 假设他是一个异步组件解析函数
       // assume it's an async component resolve function.
+      // 我们不能使用vue的默认异步解析机制，因为我们想要组件要被解析才能导航
       // we are not using Vue's default async resolving mechanism because
       // we want to halt the navigation until the incoming component has been
       // resolved.
+      // 函数组件
       if (typeof def === 'function' && def.cid === undefined) {
+        // 异步组件
         hasAsync = true
         pending++
 
+        // Promise的成功 组件选项
         const resolve = once(resolvedDef => {
+          // es 模块
           if (isESModule(resolvedDef)) {
+            // 组件选项 默认组件
             resolvedDef = resolvedDef.default
           }
+          // 在异步工厂保存成功
           // save resolved on async factory in case it's used elsewhere
           def.resolved = typeof resolvedDef === 'function'
             ? resolvedDef
@@ -38,6 +51,7 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
           }
         })
 
+        // 失败
         const reject = once(reason => {
           const msg = `Failed to resolve async component ${key}: ${reason}`
           process.env.NODE_ENV !== 'production' && warn(false, msg)
@@ -51,16 +65,21 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
 
         let res
         try {
+          // 调用返回Promise实例
           res = def(resolve, reject)
         } catch (e) {
+          // 失败
           reject(e)
         }
         if (res) {
+          // 确定是Promise实例
           if (typeof res.then === 'function') {
+            // 调用处理
             res.then(resolve, reject)
           } else {
             // new syntax in Vue 2.3
             const comp = res.component
+            // 返回组件
             if (comp && typeof comp.then === 'function') {
               comp.then(resolve, reject)
             }
@@ -73,29 +92,45 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   }
 }
 
+/**
+ * 打平映射组件
+ * @param {*} matched 匹配到的线路
+ * @param {*} fn 回调
+ * @return array 
+ */
 export function flatMapComponents (
   matched: Array<RouteRecord>,
   fn: Function
 ): Array<?Function> {
-  // 组件
+  // 将二维数组打平， 路线
   return flatten(matched.map(m => {
+    // 同一个路由下的多个组件<router-view name="a"></router-view>
+    // 
     return Object.keys(m.components).map(key => fn(
+      // 组件实例
       m.components[key],
+      // 组件实例
       m.instances[key],
+      // 路由 key
       m, key
     ))
   }))
 }
 
-// 数组concat函数盗用，将函数打平
+/**
+ * 利用concat函数，将数组打平
+ * @param {*} arr 
+ */
 export function flatten (arr: Array<any>): Array<any> {
   return Array.prototype.concat.apply([], arr)
 }
 
+// Symbol 类型是否可用
 const hasSymbol =
   typeof Symbol === 'function' &&
   typeof Symbol.toStringTag === 'symbol'
 
+  // 是否是es模块
 function isESModule (obj) {
   return obj.__esModule || (hasSymbol && obj[Symbol.toStringTag] === 'Module')
 }
@@ -105,6 +140,7 @@ function isESModule (obj) {
 // if the user uses an arrow function shorthand that happens to
 // return that Promise.
 function once (fn) {
+  // 利用闭包，来调用一次性的行为，下次的状态就为true，所以不会被再次调用了
   let called = false
   return function (...args) {
     if (called) return

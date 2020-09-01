@@ -32,7 +32,7 @@ export function createRoute (
     meta: (record && record.meta) || {},
     path: location.path || '/',
     hash: location.hash || '',
-    query,
+    query, 
     params: location.params || {},
     fullPath: getFullPath(location, stringifyQuery),
     matched: record ? formatMatch(record) : []
@@ -57,6 +57,7 @@ function clone (value) {
   }
 }
 
+// 代表初始状态的开始路线
 // the starting route that represents the initial state
 export const START = createRoute(null, {
   path: '/'
@@ -70,35 +71,59 @@ function formatMatch (record: ?RouteRecord): Array<RouteRecord> {
   const res = []
   while (record) {
     res.unshift(record)
+    // 找到父节点
     record = record.parent
   }
   return res
 }
 
+/**
+ * 获取全路径
+ * @param {*} param0 路径，查询参数，哈希
+ * @param {*} _stringifyQuery 序列化查询参数
+ */
 function getFullPath (
   { path, query = {}, hash = '' },
   _stringifyQuery
 ): string {
+  // 
   const stringify = _stringifyQuery || stringifyQuery
   return (path || '/') + stringify(query) + hash
 }
 
+/**
+ * 是否是相同的路线（当前的和下一个
+ * @param {*} a 下一个
+ * @param {*} b 当前
+ */
 export function isSameRoute (a: Route, b: ?Route): boolean {
+  // 开始路线
   if (b === START) {
     return a === b
+    // 当前没有路由
   } else if (!b) {
     return false
+    // 都存在path，说明是在切换
   } else if (a.path && b.path) {
+    // 
     return (
+      // 路径相同
       a.path.replace(trailingSlashRE, '') === b.path.replace(trailingSlashRE, '') &&
+      // hash相同
       a.hash === b.hash &&
+      // 查询字符串相同
       isObjectEqual(a.query, b.query)
     )
+    // name相同
   } else if (a.name && b.name) {
     return (
+      // 名称相同
       a.name === b.name &&
+      // hash相同
       a.hash === b.hash &&
+      // 查询子符串
       isObjectEqual(a.query, b.query) &&
+      // 参数
       isObjectEqual(a.params, b.params)
     )
   } else {

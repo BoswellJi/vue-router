@@ -88,6 +88,7 @@ declare type Location = {
   replace?: boolean;
 }
 
+// 字符串或者Location对象
 declare type RawLocation = string | Location
 
 declare type Route = {

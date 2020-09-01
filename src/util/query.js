@@ -18,6 +18,12 @@ const encode = str => encodeURIComponent(str)
 
 const decode = decodeURIComponent
 
+/**
+ * 解析query
+ * @param {*} query 查询字符串
+ * @param {*} extraQuery 额外查询字符串
+ * @param {*} _parseQuery 解析查询字符串
+ */
 export function resolveQuery (
   query: ?string,
   extraQuery: Dictionary<string> = {},
@@ -39,6 +45,11 @@ export function resolveQuery (
   return parsedQuery
 }
 
+/**
+ * 解析query
+ * @param {*} query 
+ * @return 键值对 {name:value}
+ */
 function parseQuery (query: string): Dictionary<string> {
   const res = {}
 
@@ -79,6 +90,10 @@ function parseQuery (query: string): Dictionary<string> {
   return res
 }
 
+/**
+ * 序列化query
+ * @param {*} obj 
+ */
 export function stringifyQuery (obj: Dictionary<string>): string {
 
   const res = obj ? Object.keys(obj).map(key => {

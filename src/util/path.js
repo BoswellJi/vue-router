@@ -1,5 +1,11 @@
 /* @flow */
 
+/**
+ * 解析路径
+ * @param {*} relative 
+ * @param {*} base 
+ * @param {*} append 
+ */
 export function resolvePath (
   relative: string,
   base: string,

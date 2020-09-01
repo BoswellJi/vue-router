@@ -1,6 +1,6 @@
 /*!
   * vue-router v3.1.3
-  * (c) 2019 Evan You
+  * (c) 2020 Evan You
   * @license MIT
   */
 'use strict';
@@ -31,6 +31,7 @@ function isExtendedError (constructor, err) {
   )
 }
 
+// a,继承b,单层对象
 function extend (a, b) {
   for (var key in b) {
     a[key] = b[key];
@@ -167,13 +168,16 @@ function resolveProps (route, config) {
 
 /*  */
 
+// 匹配！' () * 中的一个字符
 var encodeReserveRE = /[!'()*]/g;
 var encodeReserveReplacer = function (c) { return '%' + c.charCodeAt(0).toString(16); };
 var commaRE = /%2C/g;
 
 // fixed encodeURIComponent which is more conformant to RFC3986:
-// - escapes [!'()*]
-// - preserve commas
+// - escapes [!'()*]，转义
+// - preserve commas 分号
+
+// 将字符串进行编码
 var encode = function (str) { return encodeURIComponent(str)
   .replace(encodeReserveRE, encodeReserveReplacer)
   .replace(commaRE, ','); };
@@ -190,11 +194,13 @@ function resolveQuery (
   var parse = _parseQuery || parseQuery;
   var parsedQuery;
   try {
+    // 解析查询参数
     parsedQuery = parse(query || '');
   } catch (e) {
     process.env.NODE_ENV !== 'production' && warn(false, e.message);
     parsedQuery = {};
   }
+  // 将额外的查询参数合并到一起
   for (var key in extraQuery) {
     parsedQuery[key] = extraQuery[key];
   }
@@ -204,24 +210,36 @@ function resolveQuery (
 function parseQuery (query) {
   var res = {};
 
+  // ？ # &开头替换为空
   query = query.trim().replace(/^(\?|#|&)/, '');
 
+  // 空查询
   if (!query) {
     return res
   }
 
+  // 以&符号进行分割['a=b'  ]
   query.split('&').forEach(function (param) {
+    // 先将 +替换为' ' 以等号进行分割
     var parts = param.replace(/\+/g, ' ').split('=');
+    // 解码key
     var key = decode(parts.shift());
+
+    // 如果数组元素大于0
     var val = parts.length > 0
+    // 使用=进行连接
       ? decode(parts.join('='))
       : null;
 
+      // 配置解析的查询参数
     if (res[key] === undefined) {
+      // 没有赋值
       res[key] = val;
     } else if (Array.isArray(res[key])) {
+      // 值为数组
       res[key].push(val);
     } else {
+      // 同一个key，值放在数组
       res[key] = [res[key], val];
     }
   });
@@ -230,13 +248,16 @@ function parseQuery (query) {
 }
 
 function stringifyQuery (obj) {
-  var res = obj ? Object.keys(obj).map(function (key) {
-    var val = obj[key];
 
+  var res = obj ? Object.keys(obj).map(function (key) {
+    var val = obj[key]; //遍历obj
+
+    // undefined当作空字符串返回
     if (val === undefined) {
       return ''
     }
 
+    // null,
     if (val === null) {
       return encode(key)
     }
@@ -263,8 +284,16 @@ function stringifyQuery (obj) {
 
 /*  */
 
+// /?
 var trailingSlashRE = /\/?$/;
 
+/**
+ * 根据url信息，路线纪录，创建路线
+ * @param {*} record
+ * @param {*} location
+ * @param {*} redirectedFrom
+ * @param {*} router
+ */
 function createRoute (
   record,
   location,
@@ -278,6 +307,7 @@ function createRoute (
     query = clone(query);
   } catch (e) {}
 
+  // 路线对象字段
   var route = {
     name: location.name || (record && record.name),
     meta: (record && record.meta) || {},
@@ -313,6 +343,10 @@ var START = createRoute(null, {
   path: '/'
 });
 
+/**
+ * 整条路线的节点，子-》父
+ * @param {*} record
+ */
 function formatMatch (record) {
   var res = [];
   while (record) {
@@ -405,15 +439,19 @@ function resolvePath (
   base,
   append
 ) {
+  // 如果是绝对路径的，直接返回
   var firstChar = relative.charAt(0);
   if (firstChar === '/') {
     return relative
   }
 
+  // 哈希，或者查询字符串
   if (firstChar === '?' || firstChar === '#') {
+    // 直接，添加(url+path)返回
     return base + relative
   }
 
+  // 
   var stack = base.split('/');
 
   // remove trailing segment if:
@@ -442,29 +480,44 @@ function resolvePath (
   return stack.join('/')
 }
 
+/**
+ * 解析路径
+ * @param {*} path 
+ */
 function parsePath (path) {
   var hash = '';
   var query = '';
 
+  // 找到hash开始索引
   var hashIndex = path.indexOf('#');
+  // 找到
   if (hashIndex >= 0) {
+    // 获取路径上的hash
     hash = path.slice(hashIndex);
+    // 获取路径
     path = path.slice(0, hashIndex);
   }
 
+  // 找到路径上的查询字符串
   var queryIndex = path.indexOf('?');
   if (queryIndex >= 0) {
+    // 获取查询字符串
     query = path.slice(queryIndex + 1);
+    // 找到路径
     path = path.slice(0, queryIndex);
   }
 
+  // 返回路径,查询字符串,hash值
   return {
     path: path,
     query: query,
     hash: hash
   }
 }
-
+/**
+ * 将路径中的//转换为/
+ * @param {*} path  路径
+ */
 function cleanPath (path) {
   return path.replace(/\/\//g, '/')
 }
@@ -905,6 +958,7 @@ pathToRegexp_1.tokensToRegExp = tokensToRegExp_1;
 /*  */
 
 // $flow-disable-line
+// 创建缓存变量
 var regexpCompileCache = Object.create(null);
 
 function fillParams (
@@ -914,11 +968,13 @@ function fillParams (
 ) {
   params = params || {};
   try {
+    // 将路径编译结果进行缓存
     var filler =
       regexpCompileCache[path] ||
       (regexpCompileCache[path] = pathToRegexp_1.compile(path));
 
     // Fix #2505 resolving asterisk routes { name: 'not-found', params: { pathMatch: '/not-found' }}
+    // 参数
     if (params.pathMatch) { params[0] = params.pathMatch; }
 
     return filler(params, { pretty: true })
@@ -935,54 +991,84 @@ function fillParams (
 
 /*  */
 
+// 序列化url
 function normalizeLocation (
   raw,
   current,
   append,
   router
 ) {
+  // 地址为字符串,返回对象,否则返回自身
   var next = typeof raw === 'string' ? { path: raw } : raw;
   // named target
+  // 已经被序列化的,返回自身
   if (next._normalized) {
     return next
+    // 有name的
   } else if (next.name) {
-    return extend({}, raw)
+    // 拷贝新对象
+    next = extend({}, raw);
+    // 路由信息是否存在参数
+    var params = next.params;
+    // 拷贝路由参数信息
+    if (params && typeof params === 'object') {
+      next.params = extend({}, params);
+    }
+    return next
   }
 
   // relative params
+  // 没有路径，有参数，当前路线
   if (!next.path && next.params && current) {
+    // 拷贝路由信息
     next = extend({}, next);
+    // 标记已序列化
     next._normalized = true;
-    var params = extend(extend({}, current.params), next.params);
+    // 路线参数，拷贝参数信息
+    var params$1 = extend(extend({}, current.params), next.params);
+    // 当前路线是否存在name
     if (current.name) {
+      // 拷贝名称
       next.name = current.name;
-      next.params = params;
+      // 拷贝参数
+      next.params = params$1;
     } else if (current.matched.length) {
       var rawPath = current.matched[current.matched.length - 1].path;
-      next.path = fillParams(rawPath, params, ("path " + (current.path)));
+      next.path = fillParams(rawPath, params$1, ("path " + (current.path)));
     } else if (process.env.NODE_ENV !== 'production') {
       warn(false, "relative params navigation requires a current route.");
     }
     return next
   }
 
+  // 获取路径的信息
   var parsedPath = parsePath(next.path || '');
+  // 获取当前路线路径
   var basePath = (current && current.path) || '/';
+  // 获取当前url中解析的路径
   var path = parsedPath.path
     ? resolvePath(parsedPath.path, basePath, append || next.append)
     : basePath;
 
+    // 当前url上的查询字符串,当前路线上的查询字符串
+    // 
   var query = resolveQuery(
     parsedPath.query,
     next.query,
     router && router.options.parseQuery
   );
 
+  // 
   var hash = next.hash || parsedPath.hash;
+  // 当前哈希第一个字符不是#,就添加上
   if (hash && hash.charAt(0) !== '#') {
     hash = "#" + hash;
   }
 
+  /**
+   * 到这里就序列化过了
+   * 
+   */
   return {
     _normalized: true,
     path: path,
@@ -1183,6 +1269,7 @@ function findAnchor (children) {
 var _Vue;
 
 function install (Vue) {
+  // install方法属性,已经被安装,不再次安装
   if (install.installed && _Vue === Vue) { return }
   install.installed = true;
 
@@ -1191,22 +1278,33 @@ function install (Vue) {
   var isDef = function (v) { return v !== undefined; };
 
   var registerInstance = function (vm, callVal) {
+    // 组件是否有父组件
     var i = vm.$options._parentVnode;
     if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
       i(vm, callVal);
     }
   };
 
+  // Vue mixin,添加全局混入
   Vue.mixin({
+    //
     beforeCreate: function beforeCreate () {
+      // 已加入router:路由器实例
+      // 只有根组件才有router
       if (isDef(this.$options.router)) {
+        // 根组件
         this._routerRoot = this;
+        // 路由器
         this._router = this.$options.router;
+        // 初始化路由器
+        // 传入组件实例
         this._router.init(this);
+        // 定义响应式给根组
         Vue.util.defineReactive(this, '_route', this._router.history.current);
       } else {
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this;
       }
+      // 注册实例
       registerInstance(this, this);
     },
     destroyed: function destroyed () {
@@ -1214,14 +1312,17 @@ function install (Vue) {
     }
   });
 
+  // 给Vue构造函数添加原型属性,只读 路由器
   Object.defineProperty(Vue.prototype, '$router', {
     get: function get () { return this._routerRoot._router }
   });
 
+  // 路由规则
   Object.defineProperty(Vue.prototype, '$route', {
     get: function get () { return this._routerRoot._route }
   });
 
+  // 组测内部组件(路由视图与路由链接)
   Vue.component('RouterView', View);
   Vue.component('RouterLink', Link);
 
@@ -1232,29 +1333,47 @@ function install (Vue) {
 
 /*  */
 
+// 当前是否为浏览器环境， 是否存在window对象
 var inBrowser = typeof window !== 'undefined';
 
 /*  */
 
+/**
+ * 将路由配置转换成路由映射表
+ * @param {*} routes  路由规则
+ * @param {*} oldPathList
+ * @param {*} oldPathMap
+ * @param {*} oldNameMap
+ */
 function createRouteMap (
   routes,
   oldPathList,
   oldPathMap,
   oldNameMap
 ) {
-  // the path list is used to control path matching priority
+  // the path list is used to control path matching priority(权重)
   var pathList = oldPathList || [];
   // $flow-disable-line
+  // 路径映射 /a
   var pathMap = oldPathMap || Object.create(null);
+  // 名称映射 a
   // $flow-disable-line
   var nameMap = oldNameMap || Object.create(null);
 
+  /**
+    const routes = [
+      { path: '/foo', name:'foo', component: Foo },
+      { path: '/bar', name:'bar', component: Bar }
+    ]
+   */
   routes.forEach(function (route) {
+    // 添加路由纪录
     addRouteRecord(pathList, pathMap, nameMap, route);
   });
 
   // ensure wildcard routes are always at the end
   for (var i = 0, l = pathList.length; i < l; i++) {
+    // 匹配到开放路径，放到最后
     if (pathList[i] === '*') {
       pathList.push(pathList.splice(i, 1)[0]);
       l--;
@@ -1281,14 +1400,28 @@ function createRouteMap (
   }
 }
 
+/**
+ * 添加路由记录
+ * @param {*} pathList  路径列表
+ * @param {*} pathMap  路径映射到路径纪录
+ * @param {*} nameMap 名称映射到路径纪录
+ * @param {*} route 路线
+ * @param {*} parent 父路径
+ * @param {*} matchAs
+ */
 function addRouteRecord (
-  pathList,
-  pathMap,
-  nameMap,
-  route,
+  pathList,  // 路径列表
+  pathMap, // 路径映射
+  nameMap, // name映射
+  route, //
   parent,
   matchAs
 ) {
+  /**
+   * 路线配置
+   * path
+   * name
+   */
   var path = route.path;
   var name = route.name;
   if (process.env.NODE_ENV !== 'production') {
@@ -1301,14 +1434,17 @@ function addRouteRecord (
     );
   }
 
+  // 开放给配置
   var pathToRegexpOptions =
     route.pathToRegexpOptions || {};
   var normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict);
 
+  // 是否大小写敏感
   if (typeof route.caseSensitive === 'boolean') {
     pathToRegexpOptions.sensitive = route.caseSensitive;
   }
 
+  // 一条路由记录的所有信息
   var record = {
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
@@ -1333,9 +1469,11 @@ function addRouteRecord (
     // If users navigate to this route by name, the default child will
     // not be rendered (GH Issue #629)
     if (process.env.NODE_ENV !== 'production') {
+      /** 路线有名称，但是没有重定向名称，子路线 */
       if (
         route.name &&
         !route.redirect &&
+        // 有/零个或者1个，（路由名称导航，默认不渲染子组件
         route.children.some(function (child) { return /^\/?$/.test(child.path); })
       ) {
         warn(
@@ -1348,23 +1486,46 @@ function addRouteRecord (
         );
       }
     }
+
     route.children.forEach(function (child) {
       var childMatchAs = matchAs
         ? cleanPath((matchAs + "/" + (child.path)))
         : undefined;
+        // 将嵌套的子路线，处理到父路由同级
       addRouteRecord(pathList, pathMap, nameMap, child, record, childMatchAs);
     });
   }
 
+  /**
+   * routerConfig
+   * [
+   *   {path:'/a',name:'a',components:a,childrend:[{ path:'/b',name:'b',components:b }]}
+   * ]
+   *
+   *  pathList
+   * [
+   *    '/a',
+   *    '/a/b'
+   * ]
+   *
+   * pathMap
+   * {
+   *  '/a':{path:'/a'},
+   *  '/a/b':{path:'/a/b'}
+   * }
+   */
   if (!pathMap[record.path]) {
     pathList.push(record.path);
     pathMap[record.path] = record;
   }
 
+  // 路线别名
   if (route.alias !== undefined) {
+    // 将别名转换为数组
     var aliases = Array.isArray(route.alias) ? route.alias : [route.alias];
     for (var i = 0; i < aliases.length; ++i) {
       var alias = aliases[i];
+      // 别名不能根路径相同
       if (process.env.NODE_ENV !== 'production' && alias === path) {
         warn(
           false,
@@ -1374,6 +1535,7 @@ function addRouteRecord (
         continue
       }
 
+      // 根据别名配置路线信息与路径相同处理
       var aliasRoute = {
         path: alias,
         children: route.children
@@ -1389,8 +1551,16 @@ function addRouteRecord (
     }
   }
 
+  /**
+   * 路线有name
+   * {
+   *   'a':{path:'/a'}
+   * }
+   */
   if (name) {
+    // 不存在
     if (!nameMap[name]) {
+      // 添加
       nameMap[name] = record;
     } else if (process.env.NODE_ENV !== 'production' && !matchAs) {
       warn(
@@ -1409,6 +1579,7 @@ function compileRouteRegex (
   var regex = pathToRegexp_1(path, [], pathToRegexpOptions);
   if (process.env.NODE_ENV !== 'production') {
     var keys = Object.create(null);
+    // 路由参数
     regex.keys.forEach(function (key) {
       warn(
         !keys[key.name],
@@ -1425,9 +1596,12 @@ function normalizePath (
   parent,
   strict
 ) {
+  // 非严格下，将/ 替换为''
   if (!strict) { path = path.replace(/\/$/, ''); }
+
   if (path[0] === '/') { return path }
   if (parent == null) { return path }
+  //
   return cleanPath(((parent.path) + "/" + path))
 }
 
@@ -1435,41 +1609,58 @@ function normalizePath (
 
 
 
+// 创建匹配器
 function createMatcher (
-  routes,
-  router
+  routes,  // 路由线路配置
+  router  // 路由器实例
 ) {
+  // 创建路由映射
   var ref = createRouteMap(routes);
   var pathList = ref.pathList;
   var pathMap = ref.pathMap;
   var nameMap = ref.nameMap;
 
+  // 添加路线
   function addRoutes (routes) {
     createRouteMap(routes, pathList, pathMap, nameMap);
   }
 
+  /**
+   *
+   * @param {*} raw  将要跳转到的url
+   * @param {*} currentRoute 当前路线信息
+   * @param {*} redirectedFrom
+   */
   function match (
     raw,
     currentRoute,
-    redirectedFrom
+    redirectedFrom // url结构化
   ) {
+    // 当前url信息，当前路线信息，false,路由器,下一个地址信息
     var location = normalizeLocation(raw, currentRoute, false, router);
     var name = location.name;
-
+    // 存在路线name
     if (name) {
+      // 获取对应的路线详情
       var record = nameMap[name];
       if (process.env.NODE_ENV !== 'production') {
         warn(record, ("Route with name '" + name + "' does not exist"));
       }
+      // 不存在，创建一个路线
       if (!record) { return _createRoute(null, location) }
+      // 获取路由参数
       var paramNames = record.regex.keys
+      // 不可选参数
         .filter(function (key) { return !key.optional; })
+        // 返回参数
         .map(function (key) { return key.name; });
 
+      // 路由参数不为对象,重新赋值为对象
       if (typeof location.params !== 'object') {
         location.params = {};
       }
 
+      //
       if (currentRoute && typeof currentRoute.params === 'object') {
         for (var key in currentRoute.params) {
           if (!(key in location.params) && paramNames.indexOf(key) > -1) {
@@ -1479,7 +1670,9 @@ function createMatcher (
       }
 
       location.path = fillParams(record.path, location.params, ("named route \"" + name + "\""));
+      // 根据定义的下一个路由的record,与当前路由信息,进行和成新路线
       return _createRoute(record, location, redirectedFrom)
+      //
     } else if (location.path) {
       location.params = {};
       for (var i = 0; i < pathList.length; i++) {
@@ -1583,6 +1776,7 @@ function createMatcher (
     location,
     redirectedFrom
   ) {
+    //
     if (record && record.redirect) {
       return redirect(record, redirectedFrom || location)
     }
@@ -1635,6 +1829,7 @@ var Time =
     ? window.performance
     : Date;
 
+    // 当前时间毫秒数，保留三位小数
 function genStateKey () {
   return Time.now().toFixed(3)
 }
@@ -1670,6 +1865,13 @@ function setupScroll () {
   });
 }
 
+/**
+ *
+ * @param {*} router
+ * @param {*} to
+ * @param {*} from
+ * @param {*} isPop
+ */
 function handleScroll (
   router,
   to,
@@ -1719,9 +1921,12 @@ function handleScroll (
   });
 }
 
+// 保存位置信息
 function saveScrollPosition () {
+  // 获取状态key
   var key = getStateKey();
   if (key) {
+    // 添加位置信息
     positionStore[key] = {
       x: window.pageXOffset,
       y: window.pageYOffset
@@ -1729,6 +1934,9 @@ function saveScrollPosition () {
   }
 }
 
+/**
+ * 获取之前保存的位置信息，垂直偏移，水平偏移
+ */
 function getScrollPosition () {
   var key = getStateKey();
   if (key) {
@@ -1736,20 +1944,31 @@ function getScrollPosition () {
   }
 }
 
+/**
+ * 获取元素
+ * @param {*} el dom元素
+ * @param {*} offset  偏移信息
+ */
 function getElementPosition (el, offset) {
+  // 缓存html dom节点
   var docEl = document.documentElement;
+  // 获取html位置，尺寸
   var docRect = docEl.getBoundingClientRect();
+  // 获取指定dom
   var elRect = el.getBoundingClientRect();
+  // 获取元素距离html的下left,right
   return {
     x: elRect.left - docRect.left - offset.x,
     y: elRect.top - docRect.top - offset.y
   }
 }
 
+// 验证位置数据是否合格
 function isValidPosition (obj) {
   return isNumber(obj.x) || isNumber(obj.y)
 }
 
+//
 function normalizePosition (obj) {
   return {
     x: isNumber(obj.x) ? obj.x : window.pageXOffset,
@@ -1800,11 +2019,14 @@ function scrollToPosition (shouldScroll, position) {
 
 /*  */
 
+// 是否支持pushState方法
 var supportsPushState =
+  // 浏览器中
   inBrowser &&
   (function () {
     var ua = window.navigator.userAgent;
 
+    // 判断用户代理排除，是android 2. 或者 android 4.0  并且
     if (
       (ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) &&
       ua.indexOf('Mobile Safari') !== -1 &&
@@ -1814,18 +2036,30 @@ var supportsPushState =
       return false
     }
 
+    // 存在history对象和属性的
     return window.history && 'pushState' in window.history
   })();
 
+/**
+ * 添加状态
+ * @param {*} url
+ * @param {*} replace
+ */
 function pushState (url, replace) {
+  // 保存滚动位置信息
   saveScrollPosition();
   // try...catch the pushState call to get around Safari
   // DOM Exception 18 where it limits to 100 pushState calls
   var history = window.history;
   try {
     if (replace) {
-      history.replaceState({ key: getStateKey() }, '', url);
+      // preserve existing history state as it could be overriden by the user
+      var stateCopy = extend({}, history.state);
+      stateCopy.key = getStateKey();
+      // 替换，修改当前历史记录实体
+      history.replaceState(stateCopy, '', url);
     } else {
+      // 向当前浏览器会话的历史堆栈添加状态
       history.pushState({ key: setStateKey(genStateKey()) }, '', url);
     }
   } catch (e) {
@@ -1833,7 +2067,12 @@ function pushState (url, replace) {
   }
 }
 
+/**
+ * 替换状态，
+ * @param {*} url
+ */
 function replaceState (url) {
+  // 添加状态
   pushState(url, true);
 }
 
@@ -1841,14 +2080,18 @@ function replaceState (url) {
 
 function runQueue (queue, fn, cb) {
   var step = function (index) {
+    // 大于等于队列长度(索引)
     if (index >= queue.length) {
+      // 
       cb();
     } else {
+      // 队列中有，
       if (queue[index]) {
         fn(queue[index], function () {
           step(index + 1);
         });
       } else {
+        // 下一步
         step(index + 1);
       }
     }
@@ -1858,6 +2101,10 @@ function runQueue (queue, fn, cb) {
 
 /*  */
 
+/**
+ * 解析异步组件
+ * @param {*} matched
+ */
 function resolveAsyncComponents (matched) {
   return function (to, from, next) {
     var hasAsync = false;
@@ -1928,6 +2175,7 @@ function flatMapComponents (
   matched,
   fn
 ) {
+  // 组件
   return flatten(matched.map(function (m) {
     return Object.keys(m.components).map(function (key) { return fn(
       m.components[key],
@@ -1937,6 +2185,7 @@ function flatMapComponents (
   }))
 }
 
+// 数组concat函数盗用，将函数打平
 function flatten (arr) {
   return Array.prototype.concat.apply([], arr)
 }
@@ -1998,6 +2247,7 @@ var History = function History (router, base) {
   this.router = router;
   this.base = normalizeBase(base);
   // start with a route object that stands for "nowhere"
+  // 当前路线
   this.current = START;
   this.pending = null;
   this.ready = false;
@@ -2027,11 +2277,12 @@ History.prototype.onError = function onError (errorCb) {
 
 History.prototype.transitionTo = function transitionTo (
   location,
-  onComplete,
-  onAbort
+  onComplete ,
+  onAbort 
 ) {
     var this$1 = this;
 
+// 匹配到路径
   var route = this.router.match(location, this.current);
   this.confirmTransition(
     route,
@@ -2062,15 +2313,17 @@ History.prototype.transitionTo = function transitionTo (
   );
 };
 
-History.prototype.confirmTransition = function confirmTransition (route, onComplete, onAbort) {
+// 提示过度,路线
+History.prototype.confirmTransition = function confirmTransition (route, onComplete, onAbort ) {
     var this$1 = this;
 
+// 获取当前路由
   var current = this.current;
   var abort = function (err) {
-    // after merging https://github.com/vuejs/vue-router/pull/2771 we
-    // When the user navigates through history through back/forward buttons
-    // we do not want to throw the error. We only throw it if directly calling
-    // push/replace. That's why it's not included in isError
+  // after merging https://github.com/vuejs/vue-router/pull/2771 we
+  // When the user navigates through history through back/forward buttons
+  // we do not want to throw the error. We only throw it if directly calling
+  // push/replace. That's why it's not included in isError
     if (!isExtendedError(NavigationDuplicated, err) && isError(err)) {
       if (this$1.errorCbs.length) {
         this$1.errorCbs.forEach(function (cb) {
@@ -2083,15 +2336,19 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
     }
     onAbort && onAbort(err);
   };
+  // 下一个路线与当前是同一个,丢弃导航
   if (
     isSameRoute(route, current) &&
-    // in the case the route map has been dynamically appended to
-    route.matched.length === current.matched.length
+  // 已经被动态添加的路由映射
+  // in the case the route map has been dynamically appended to
+  route.matched.length === current.matched.length
   ) {
+  // 安全url
     this.ensureURL();
     return abort(new NavigationDuplicated(route))
   }
 
+  // 解析出队列
   var ref = resolveQueue(
     this.current.matched,
     route.matched
@@ -2100,8 +2357,9 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
     var deactivated = ref.deactivated;
     var activated = ref.activated;
 
+  // 路由守护
   var queue = [].concat(
-    // in-component leave guards
+  // in-component leave guards
     extractLeaveGuards(deactivated),
     // global before hooks
     this.router.beforeHooks,
@@ -2121,15 +2379,15 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
     try {
       hook(route, current, function (to) {
         if (to === false || isError(to)) {
-          // next(false) -> abort navigation, ensure current URL
+        // next(false) -> abort navigation, ensure current URL
           this$1.ensureURL(true);
           abort(to);
         } else if (
           typeof to === 'string' ||
-          (typeof to === 'object' &&
-            (typeof to.path === 'string' || typeof to.name === 'string'))
+        (typeof to === 'object' &&
+          (typeof to.path === 'string' || typeof to.name === 'string'))
         ) {
-          // next('/') or next({ path: '/' }) -> redirect
+        // next('/') or next({ path: '/' }) -> redirect
           abort();
           if (typeof to === 'object' && to.replace) {
             this$1.replace(to);
@@ -2137,7 +2395,7 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
             this$1.push(to);
           }
         } else {
-          // confirm transition and pass on the value
+        // confirm transition and pass on the value
           next(to);
         }
       });
@@ -2145,9 +2403,12 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
       abort(e);
     }
   };
-
+  /**
+ * 运行队列
+ */
   runQueue(queue, iterator, function () {
     var postEnterCbs = [];
+    // 当前路由是否有效
     var isValid = function () { return this$1.current === route; };
     // wait until async components are resolved before
     // extracting in-component enter guards
@@ -2171,27 +2432,38 @@ History.prototype.confirmTransition = function confirmTransition (route, onCompl
 };
 
 History.prototype.updateRoute = function updateRoute (route) {
+// 更新路由
   var prev = this.current;
   this.current = route;
   this.cb && this.cb(route);
+  // 调用路由
   this.router.afterHooks.forEach(function (hook) {
     hook && hook(route, prev);
   });
 };
 
+/**
+ * 规范化路径
+ * @param {*} base
+ */
 function normalizeBase (base) {
+  // 没有配置
   if (!base) {
+    // 浏览器中
     if (inBrowser) {
       // respect <base> tag
+      // 获取base标签的根路径配置
       var baseEl = document.querySelector('base');
       base = (baseEl && baseEl.getAttribute('href')) || '/';
-      // strip full URL origin
+      // strip full URL origin 将https://fg
       base = base.replace(/^https?:\/\/[^\/]+/, '');
     } else {
+      // 默认为空
       base = '/';
     }
   }
   // make sure there's the starting slash
+  // 根路径
   if (base.charAt(0) !== '/') {
     base = '/' + base;
   }
@@ -2205,7 +2477,9 @@ function resolveQueue (
 ) {
   var i;
   var max = Math.max(current.length, next.length);
+  // 比较路线信息的相同部分
   for (i = 0; i < max; i++) {
+    // 不同时候断开
     if (current[i] !== next[i]) {
       break
     }
@@ -2249,6 +2523,7 @@ function extractLeaveGuards (deactivated) {
   return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
 }
 
+// 提取路由更新
 function extractUpdateHooks (updated) {
   return extractGuards(updated, 'beforeRouteUpdate', bindGuard)
 }
@@ -2325,9 +2600,12 @@ var HTML5History = /*@__PURE__*/(function (History) {
 
     History.call(this, router, base);
 
+    // 获取配置的路由器滚动行为
     var expectScroll = router.options.scrollBehavior;
+    // 是否支持h5的history api 并且存在滚动行为
     var supportsScroll = supportsPushState && expectScroll;
 
+    // 调用
     if (supportsScroll) {
       setupScroll();
     }
@@ -2397,11 +2675,16 @@ var HTML5History = /*@__PURE__*/(function (History) {
   return HTML5History;
 }(History));
 
+// 获取当前url
 function getLocation (base) {
+  // 路径，解码
   var path = decodeURI(window.location.pathname);
+  // 路径中时候匹配路由，这个是html5的history
   if (base && path.indexOf(base) === 0) {
+    // 取非base字符串部分
     path = path.slice(base.length);
   }
+  // 路径+查询字符串+哈希
   return (path || '/') + window.location.search + window.location.hash
 }
 
@@ -2410,7 +2693,6 @@ function getLocation (base) {
 var HashHistory = /*@__PURE__*/(function (History) {
   function HashHistory (router, base, fallback) {
     History.call(this, router, base);
-    // check history fallback deeplinking
     if (fallback && checkFallback(this.base)) {
       return
     }
@@ -2426,7 +2708,9 @@ var HashHistory = /*@__PURE__*/(function (History) {
   HashHistory.prototype.setupListeners = function setupListeners () {
     var this$1 = this;
 
+    // 路由实例
     var router = this.router;
+    // 是否配置滚动方法
     var expectScroll = router.options.scrollBehavior;
     var supportsScroll = supportsPushState && expectScroll;
 
@@ -2435,13 +2719,18 @@ var HashHistory = /*@__PURE__*/(function (History) {
     }
 
     window.addEventListener(
+      // 根据pushState支持程度
       supportsPushState ? 'popstate' : 'hashchange',
       function () {
+        // 当前路由
+        console.log(1223);
         var current = this$1.current;
         if (!ensureSlash()) {
           return
         }
+        // 过渡
         this$1.transitionTo(getHash(), function (route) {
+          // 才能在滚动
           if (supportsScroll) {
             handleScroll(this$1.router, route, current, true);
           }
@@ -2496,6 +2785,9 @@ var HashHistory = /*@__PURE__*/(function (History) {
     }
   };
 
+  /**
+   * 获取当前地址的hash字符串
+   */
   HashHistory.prototype.getCurrentLocation = function getCurrentLocation () {
     return getHash()
   };
@@ -2503,59 +2795,94 @@ var HashHistory = /*@__PURE__*/(function (History) {
   return HashHistory;
 }(History));
 
+/**
+ * 检查反馈
+ * @param {*} base 根路径
+ */
 function checkFallback (base) {
   var location = getLocation(base);
+  // 不存在 /#
   if (!/^\/#/.test(location)) {
+    // 直接跳转
     window.location.replace(cleanPath(base + '/#' + location));
     return true
   }
 }
 
+/**
+ * 确保框架路径
+ */
 function ensureSlash () {
+  // 获取路径中的hash字符串
   var path = getHash();
+  // 第一个字符是 /
   if (path.charAt(0) === '/') {
     return true
   }
+  //
   replaceHash('/' + path);
   return false
 }
 
+/**
+ * 获取hash
+ */
 function getHash () {
   // We can't use window.location.hash here because it's not
   // consistent across browsers - Firefox will pre-decode it!
+  // 当前地址
   var href = window.location.href;
+  // #字符的索引
   var index = href.indexOf('#');
   // empty path
+  // <0没有哈希
   if (index < 0) { return '' }
-
+  // 获取hash字符串
   href = href.slice(index + 1);
   // decode the hash but not the search or hash
   // as search(query) is already decoded
   // https://github.com/vuejs/vue-router/issues/2708
+  // hash存在查询字符串  name?age=12
   var searchIndex = href.indexOf('?');
+  // hash中没有搜索信息
   if (searchIndex < 0) {
+    // 获取#索引 'age=12#hah'
     var hashIndex = href.indexOf('#');
+    // 找到了hash字符串
     if (hashIndex > -1) {
       href = decodeURI(href.slice(0, hashIndex)) + href.slice(hashIndex);
+      // 没有hash字符串
     } else { href = decodeURI(href); }
   } else {
-    if (searchIndex > -1) {
-      href = decodeURI(href.slice(0, searchIndex)) + href.slice(searchIndex);
-    }
+    href = decodeURI(href.slice(0, searchIndex)) + href.slice(searchIndex);
   }
 
   return href
 }
 
+/**
+ * 获取url
+ * @param {*} path
+ */
 function getUrl (path) {
+  // 页面地址
   var href = window.location.href;
+  // hash字符串开始位置
   var i = href.indexOf('#');
+  // 获取hash之前
   var base = i >= 0 ? href.slice(0, i) : href;
+  // 将地址作为hash进行添加
   return (base + "#" + path)
 }
 
+/**
+ * 添加hash
+ * @param {*} path
+ */
 function pushHash (path) {
+  // 是否支持pushState方法
   if (supportsPushState) {
+    // 添加新状态
     pushState(getUrl(path));
   } else {
     window.location.hash = path;
@@ -2563,7 +2890,9 @@ function pushHash (path) {
 }
 
 function replaceHash (path) {
+  // 支持pushState方法
   if (supportsPushState) {
+    // 替换当前路径的状态
     replaceState(getUrl(path));
   } else {
     window.location.replace(getUrl(path));
@@ -2648,7 +2977,7 @@ var AbstractHistory = /*@__PURE__*/(function (History) {
 
 
 
-var VueRouter = function VueRouter (options) {
+var VueRouter = function VueRouter(options) {
   if ( options === void 0 ) options = {};
 
   this.app = null;
@@ -2659,11 +2988,15 @@ var VueRouter = function VueRouter (options) {
   this.afterHooks = [];
   this.matcher = createMatcher(options.routes || [], this);
 
+  // 确定路由模式 hash || history
   var mode = options.mode || 'hash';
+  // 设置了history路由模式，但是不支持
   this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false;
+
   if (this.fallback) {
     mode = 'hash';
   }
+  // 不在浏览器，服务器端
   if (!inBrowser) {
     mode = 'abstract';
   }
@@ -2688,6 +3021,7 @@ var VueRouter = function VueRouter (options) {
 
 var prototypeAccessors = { currentRoute: { configurable: true } };
 
+// 当前url信息和当前路线信息，进行匹配
 VueRouter.prototype.match = function match (
   raw,
   current,
@@ -2696,10 +3030,17 @@ VueRouter.prototype.match = function match (
   return this.matcher.match(raw, current, redirectedFrom)
 };
 
+/**
+ * 获取当前路线
+ */
 prototypeAccessors.currentRoute.get = function () {
   return this.history && this.history.current
 };
 
+/**
+ * 初始化
+ * @param {*} app
+ */
 VueRouter.prototype.init = function init (app /* Vue component instance */) {
     var this$1 = this;
 
@@ -2709,10 +3050,12 @@ VueRouter.prototype.init = function init (app /* Vue component instance */) {
     "before creating root instance."
   );
 
+  // 多组件
   this.apps.push(app);
 
   // set up app destroyed handler
   // https://github.com/vuejs/vue-router/issues/2639
+  // 自定义事件监听
   app.$once('hook:destroyed', function () {
     // clean out app from this.apps array once destroyed
     var index = this$1.apps.indexOf(app);
@@ -2728,19 +3071,23 @@ VueRouter.prototype.init = function init (app /* Vue component instance */) {
     return
   }
 
+  // 根组件
   this.app = app;
 
+  // 不同的路由方案实例
   var history = this.history;
 
+  // html5方案实例
   if (history instanceof HTML5History) {
+    // 过渡到当前路由
     history.transitionTo(history.getCurrentLocation());
   } else if (history instanceof HashHistory) {
     var setupHashListener = function () {
       history.setupListeners();
     };
     history.transitionTo(
-      history.getCurrentLocation(),
-      setupHashListener,
+      history.getCurrentLocation(), // 传入当前地址
+      setupHashListener, //
       setupHashListener
     );
   }
@@ -2861,7 +3208,7 @@ VueRouter.prototype.addRoutes = function addRoutes (routes) {
 
 Object.defineProperties( VueRouter.prototype, prototypeAccessors );
 
-function registerHook (list, fn) {
+function registerHook(list, fn) {
   list.push(fn);
   return function () {
     var i = list.indexOf(fn);
@@ -2869,7 +3216,7 @@ function registerHook (list, fn) {
   }
 }
 
-function createHref (base, fullPath, mode) {
+function createHref(base, fullPath, mode) {
   var path = mode === 'hash' ? '#' + fullPath : fullPath;
   return base ? cleanPath(base + '/' + path) : path
 }
@@ -2877,6 +3224,7 @@ function createHref (base, fullPath, mode) {
 VueRouter.install = install;
 VueRouter.version = '3.1.3';
 
+// 浏览器环境下 && 全局变量Vue
 if (inBrowser && window.Vue) {
   window.Vue.use(VueRouter);
 }

@@ -35,6 +35,7 @@ export default {
   render (h: Function) {
     const router = this.$router
     const current = this.$route
+    // 解析地址和线路
     const { location, route, href } = router.resolve(
       this.to,
       current,
@@ -42,15 +43,18 @@ export default {
     )
 
     const classes = {}
+    // 路由配置项 linkActiveClass
     const globalActiveClass = router.options.linkActiveClass
     const globalExactActiveClass = router.options.linkExactActiveClass
     // Support global empty active class
+    // 设置没有配置样式时候的默认样式
     const activeClassFallback =
       globalActiveClass == null ? 'router-link-active' : globalActiveClass
     const exactActiveClassFallback =
       globalExactActiveClass == null
         ? 'router-link-exact-active'
         : globalExactActiveClass
+        // 是否设置activeClass属性，单独设置
     const activeClass =
       this.activeClass == null ? activeClassFallback : this.activeClass
     const exactActiveClass =
@@ -61,7 +65,7 @@ export default {
     const compareTarget = route.redirectedFrom
       ? createRoute(null, normalizeLocation(route.redirectedFrom), null, router)
       : route
-
+    // 是否为相同的线路
     classes[exactActiveClass] = isSameRoute(current, compareTarget)
     classes[activeClass] = this.exact
       ? classes[exactActiveClass]
@@ -78,6 +82,7 @@ export default {
     }
 
     const on = { click: guardEvent }
+    // ['click','keydown']，绑定的所有事件都可以触发
     if (Array.isArray(this.event)) {
       this.event.forEach(e => {
         on[e] = handler
@@ -86,6 +91,7 @@ export default {
       on[this.event] = handler
     }
 
+    // 创建组件的data
     const data: any = { class: classes }
 
     const scopedSlot =
@@ -114,7 +120,7 @@ export default {
         return scopedSlot.length === 0 ? h() : h('span', {}, scopedSlot)
       }
     }
-
+    // 标签是a
     if (this.tag === 'a') {
       data.on = on
       data.attrs = { href }
@@ -150,11 +156,14 @@ export default {
         data.on = on
       }
     }
-
     return h(this.tag, data, this.$slots.default)
   }
 }
 
+/**
+ * 守护事件，做必要的限制，之后才能触发路由切换
+ * @param {*} e 
+ */
 function guardEvent (e) {
   // don't redirect with control keys
   if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) return
@@ -174,14 +183,20 @@ function guardEvent (e) {
   return true
 }
 
+/**
+ * 找到锚点
+ * @param {*} children vnode
+ */
 function findAnchor (children) {
   if (children) {
     let child
     for (let i = 0; i < children.length; i++) {
       child = children[i]
+      // 是a元素的返回
       if (child.tag === 'a') {
         return child
       }
+      // 递归操作
       if (child.children && (child = findAnchor(child.children))) {
         return child
       }

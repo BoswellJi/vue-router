@@ -15,8 +15,15 @@ export class AbstractHistory extends History {
     this.index = -1
   }
 
+  /**
+   * 推送地址
+   * @param {*} location 本地地址
+   * @param {*} onComplete 
+   * @param {*} onAbort 
+   */
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     this.transitionTo(
+      // 
       location,
       route => {
         this.stack = this.stack.slice(0, this.index + 1).concat(route)

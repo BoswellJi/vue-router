@@ -144,7 +144,9 @@ const router = new VueRouter({
     { path: '/baz', component: Baz },
 
     // Qux implements an in-component beforeRouteEnter hook
-    { path: '/qux', component: Qux },
+    { path: '/qux', component: Qux, beforeEnter(){
+      console.log(123);
+    } },
 
     // in-component beforeRouteEnter hook for async components
     {
@@ -176,6 +178,11 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
+// 每一个路由之前
+// router.beforeHooks=[(...args)=>{
+//   console.log(args);
+// }]
 
 new Vue({
   router,

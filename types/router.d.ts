@@ -79,16 +79,32 @@ export interface RouterOptions {
 
 type RoutePropsFunction = (route: Route) => Object
 
+// 路径中正则配置
 export interface PathToRegexpOptions {
   sensitive?: boolean
   strict?: boolean
   end?: boolean
 }
 
+// 路由器配置
 export interface RouteConfig {
   path: string
   name?: string
   component?: Component
+  // 一个路径下对应的多个组件，每个组件根据router-view的name属性来对应显示
+  /**
+   * {
+      path: '/other',
+      components: {
+        default: Baz,
+        a: Bar,
+        b: Foo
+      }
+    }
+
+    <router-view class="view two" name="a"></router-view>
+    <router-view class="view three" name="b"></router-view>
+   */
   components?: Dictionary<Component>
   redirect?: RedirectOption
   alias?: string | string[]
@@ -100,6 +116,7 @@ export interface RouteConfig {
   pathToRegexpOptions?: PathToRegexpOptions
 }
 
+// 线路记录
 export interface RouteRecord {
   path: string
   regex: RegExp
@@ -122,6 +139,7 @@ export interface RouteRecord {
     | Dictionary<boolean | Object | RoutePropsFunction>
 }
 
+// 位置
 export interface Location {
   name?: string
   path?: string
@@ -132,6 +150,7 @@ export interface Location {
   replace?: boolean
 }
 
+// 线路
 export interface Route {
   path: string
   name?: string
