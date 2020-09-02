@@ -8,31 +8,37 @@ import { setupScroll, handleScroll } from '../util/scroll'
 import { pushState, replaceState, supportsPushState } from '../util/push-state'
 
 export class HTML5History extends History {
+  _startLocation: string
+
   constructor (router: Router, base: ?string) {
     super(router, base)
 
-    // 获取配置的路由器滚动行为
+    this._startLocation = getLocation(this.base)
+  }
+
+  setupListeners () {
+    if (this.listeners.length > 0) {
+      return
+    }
+
+    const router = this.router
     const expectScroll = router.options.scrollBehavior
     // 是否支持h5的history api 并且存在滚动行为
     const supportsScroll = supportsPushState && expectScroll
 
     // 调用
     if (supportsScroll) {
-      setupScroll()
+      this.listeners.push(setupScroll())
     }
-    // 获取位置
-    const initLocation = getLocation(this.base)
-    // popstate事件
-    window.addEventListener('popstate', e => {
 
-      // 当前路线
+    const handleRoutingEvent = () => {
       const current = this.current
 
       // 避免首次popstate触发在一些浏览器，但是首次历史路由没有更新，因为同时异步守护
       // Avoiding first `popstate` event dispatched in some browsers but first
       // history route not updated since async guard at the same time.
       const location = getLocation(this.base)
-      if (this.current === START && location === initLocation) {
+      if (this.current === START && location === this._startLocation) {
         return
       }
       // 过渡下个页面
@@ -42,6 +48,10 @@ export class HTML5History extends History {
           handleScroll(router, route, current, true)
         }
       })
+    }
+    window.addEventListener('popstate', handleRoutingEvent)
+    this.listeners.push(() => {
+      window.removeEventListener('popstate', handleRoutingEvent)
     })
   }
 
@@ -116,9 +126,7 @@ export function getLocation (base: string): string {
 
   // /abc/
   let path = decodeURI(window.location.pathname)
-  // 当前地址路径是否是配置的基础路径
-  if (base && path.indexOf(base) === 0) {
-    // 取非base字符串部分
+  if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
     path = path.slice(base.length)
   }
   // /abc/ + '' + ''

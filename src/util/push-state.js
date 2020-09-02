@@ -22,8 +22,7 @@ export const supportsPushState =
       return false
     }
 
-    // 存在history对象和属性的
-    return window.history && 'pushState' in window.history
+    return window.history && typeof window.history.pushState === 'function'
   })()
 
 /**

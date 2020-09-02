@@ -26,7 +26,10 @@ export class HashHistory extends History {
   // this is delayed until the app mounts
   // to avoid the hashchange listener being fired too early
   setupListeners () {
-    // 路由实例
+    if (this.listeners.length > 0) {
+      return
+    }
+
     const router = this.router
     // 是否配置滚动方法
     const expectScroll = router.options.scrollBehavior
@@ -35,33 +38,31 @@ export class HashHistory extends History {
 
     // 安装滚动
     if (supportsScroll) {
-      setupScroll()
+      this.listeners.push(setupScroll())
     }
 
-    window.addEventListener(
-      // 根据pushState支持程度 
-      // 只有在做出浏览器动作时：
-      // 1. Javascript代码中调用history.back()或者history.forward()方法）
-      // 2. 带href属性的a,前进，后退按钮
-      supportsPushState ? 'popstate' : 'hashchange',
-      () => {
-        // 当前线路
-        const current = this.current
-        if (!ensureSlash()) {
-          return
-        }
-        // 过渡
-        this.transitionTo(getHash(), route => {
-          // 才能在滚动
-          if (supportsScroll) {
-            handleScroll(this.router, route, current, true)
-          }
-          if (!supportsPushState) {
-            replaceHash(route.fullPath)
-          }
-        })
+    const handleRoutingEvent = () => {
+      const current = this.current
+      if (!ensureSlash()) {
+        return
       }
+      this.transitionTo(getHash(), route => {
+        if (supportsScroll) {
+          handleScroll(this.router, route, current, true)
+        }
+        if (!supportsPushState) {
+          replaceHash(route.fullPath)
+        }
+      })
+    }
+    const eventType = supportsPushState ? 'popstate' : 'hashchange'
+    window.addEventListener(
+      eventType,
+      handleRoutingEvent
     )
+    this.listeners.push(() => {
+      window.removeEventListener(eventType, handleRoutingEvent)
+    })
   }
 
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {

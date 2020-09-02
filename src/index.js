@@ -8,6 +8,7 @@ import { cleanPath } from './util/path'
 import { createMatcher } from './create-matcher'
 import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
+import { handleScroll } from './util/scroll'
 
 import { HashHistory } from './history/hash'
 import { HTML5History } from './history/html5'
@@ -15,22 +16,26 @@ import { AbstractHistory } from './history/abstract'
 
 import type { Matcher } from './create-matcher'
 
-export default class VueRouter {
-  static install: () => void;
-  static version: string;
+import { isNavigationFailure, NavigationFailureType } from './util/errors'
 
-  app: any;
-  apps: Array<any>;
-  ready: boolean;
-  readyCbs: Array<Function>;
-  options: RouterOptions;
-  mode: string;
-  history: HashHistory | HTML5History | AbstractHistory;
-  matcher: Matcher;
-  fallback: boolean;
-  beforeHooks: Array<?NavigationGuard>;
-  resolveHooks: Array<?NavigationGuard>;
-  afterHooks: Array<?AfterNavigationHook>;
+export default class VueRouter {
+  static install: () => void
+  static version: string
+  static isNavigationFailure: Function
+  static NavigationFailureType: any
+
+  app: any
+  apps: Array<any>
+  ready: boolean
+  readyCbs: Array<Function>
+  options: RouterOptions
+  mode: string
+  history: HashHistory | HTML5History | AbstractHistory
+  matcher: Matcher
+  fallback: boolean
+  beforeHooks: Array<?NavigationGuard>
+  resolveHooks: Array<?NavigationGuard>
+  afterHooks: Array<?AfterNavigationHook>
 
   constructor(options: RouterOptions = {}) {
     this.app = null
@@ -44,9 +49,8 @@ export default class VueRouter {
 
     // 确定路由模式 hash || history
     let mode = options.mode || 'hash'
-    // 设置了history路由模式，但是不支持
-    this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
-
+    this.fallback =
+      mode === 'history' && !supportsPushState && options.fallback !== false
     if (this.fallback) {
       mode = 'hash'
     }
@@ -73,17 +77,7 @@ export default class VueRouter {
     }
   }
 
-  /**
-   * 当前url信息和当前路线信息，进行匹配
-   * @param {*} raw 地址
-   * @param {*} current 
-   * @param {*} redirectedFrom 
-   */
-  match(
-    raw: RawLocation,
-    current?: Route,
-    redirectedFrom?: Location
-  ): Route {
+  match (raw: RawLocation, current?: Route, redirectedFrom?: Location): Route {
     return this.matcher.match(raw, current, redirectedFrom)
   }
 
@@ -94,16 +88,13 @@ export default class VueRouter {
     return this.history && this.history.current
   }
 
-  /**
-   * 初始化
-   * @param {*} app 组件实例
-   */
-  init(app: any /* Vue component instance */) {
-    process.env.NODE_ENV !== 'production' && assert(
-      install.installed,
-      `not installed. Make sure to call \`Vue.use(VueRouter)\` ` +
-      `before creating root instance.`
-    )
+  init (app: any /* Vue component instance */) {
+    process.env.NODE_ENV !== 'production' &&
+      assert(
+        install.installed,
+        `not installed. Make sure to call \`Vue.use(VueRouter)\` ` +
+          `before creating root instance.`
+      )
 
     // 添加当前组件实例
     this.apps.push(app)
@@ -118,6 +109,8 @@ export default class VueRouter {
       // ensure we still have a main app or null if no apps
       // we do not release the router so it can be reused
       if (this.app === app) this.app = this.apps[0] || null
+
+      if (!this.app) this.history.teardown()
     })
 
     // 主要app 预先初始化
@@ -133,25 +126,30 @@ export default class VueRouter {
     // 不同的路由方案实例
     const history = this.history
 
-    // html5方案
-    if (history instanceof HTML5History) {
-      history.transitionTo(history.getCurrentLocation())
-      // hash方法
-    } else if (history instanceof HashHistory) {
-      const setupHashListener = () => {
+    if (history instanceof HTML5History || history instanceof HashHistory) {
+      const handleInitialScroll = routeOrError => {
+        const from = history.current
+        const expectScroll = this.options.scrollBehavior
+        const supportsScroll = supportsPushState && expectScroll
+
+        if (supportsScroll && 'fullPath' in routeOrError) {
+          handleScroll(this, routeOrError, from, false)
+        }
+      }
+      const setupListeners = routeOrError => {
         history.setupListeners()
+        handleInitialScroll(routeOrError)
       }
       history.transitionTo(
-        history.getCurrentLocation(), // 传入当前地址
-        setupHashListener, //
-        setupHashListener
+        history.getCurrentLocation(),
+        setupListeners,
+        setupListeners
       )
     }
 
     // 监听历史记录
     history.listen(route => {
-      // 遍历所有组件，给所有组件添加_route线路对象
-      this.apps.forEach((app) => {
+      this.apps.forEach(app => {
         app._route = route
       })
     })
@@ -220,11 +218,14 @@ export default class VueRouter {
     if (!route) {
       return []
     }
-    return [].concat.apply([], route.matched.map(m => {
-      return Object.keys(m.components).map(key => {
-        return m.components[key]
+    return [].concat.apply(
+      [],
+      route.matched.map(m => {
+        return Object.keys(m.components).map(key => {
+          return m.components[key]
+        })
       })
-    }))
+    )
   }
 
   /**
@@ -247,14 +248,7 @@ export default class VueRouter {
   } {
     // 当前线路
     current = current || this.history.current
-    // 规范化位置
-    const location = normalizeLocation(
-      to,
-      current,
-      append,
-      this
-    )
-
+    const location = normalizeLocation(to, current, append, this)
     const route = this.match(location, current)
     const fullPath = route.redirectedFrom || route.fullPath
     const base = this.history.base
@@ -310,6 +304,8 @@ function createHref(base: string, fullPath: string, mode) {
 
 VueRouter.install = install
 VueRouter.version = '__VERSION__'
+VueRouter.isNavigationFailure = isNavigationFailure
+VueRouter.NavigationFailureType = NavigationFailureType
 
 // 浏览器环境下 && 全局变量Vue
 if (inBrowser && window.Vue) {

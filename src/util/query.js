@@ -8,13 +8,12 @@ const encodeReserveReplacer = c => '%' + c.charCodeAt(0).toString(16)
 const commaRE = /%2C/g
 
 // fixed encodeURIComponent which is more conformant to RFC3986:
-// - escapes [!'()*]，转义
-// - preserve commas 分号
-
-// 将字符串进行编码
-const encode = str => encodeURIComponent(str)
-  .replace(encodeReserveRE, encodeReserveReplacer)
-  .replace(commaRE, ',')
+// - escapes [!'()*]
+// - preserve commas
+const encode = str =>
+  encodeURIComponent(str)
+    .replace(encodeReserveRE, encodeReserveReplacer)
+    .replace(commaRE, ',')
 
 const decode = decodeURIComponent
 
@@ -40,16 +39,16 @@ export function resolveQuery (
   }
   // 将额外的查询参数合并到一起
   for (const key in extraQuery) {
-    parsedQuery[key] = extraQuery[key]
+    const value = extraQuery[key]
+    parsedQuery[key] = Array.isArray(value)
+      ? value.map(castQueryParamValue)
+      : castQueryParamValue(value)
   }
   return parsedQuery
 }
 
-/**
- * 解析query
- * @param {*} query 
- * @return 键值对 {name:value}
- */
+const castQueryParamValue = value => (value == null || typeof value === 'object' ? value : String(value))
+
 function parseQuery (query: string): Dictionary<string> {
   const res = {}
 
@@ -67,12 +66,7 @@ function parseQuery (query: string): Dictionary<string> {
     const parts = param.replace(/\+/g, ' ').split('=')
     // 解码key
     const key = decode(parts.shift())
-
-    // 如果数组元素大于0
-    const val = parts.length > 0
-    // 使用=进行连接
-      ? decode(parts.join('='))
-      : null
+    const val = parts.length > 0 ? decode(parts.join('=')) : null
 
       // 配置解析的查询参数
     if (res[key] === undefined) {
@@ -95,36 +89,38 @@ function parseQuery (query: string): Dictionary<string> {
  * @param {*} obj 
  */
 export function stringifyQuery (obj: Dictionary<string>): string {
+  const res = obj
+    ? Object.keys(obj)
+      .map(key => {
+        const val = obj[key]
 
-  const res = obj ? Object.keys(obj).map(key => {
-    const val = obj[key] //遍历obj
-
-    // undefined当作空字符串返回
-    if (val === undefined) {
-      return ''
-    }
-
-    // null,
-    if (val === null) {
-      return encode(key)
-    }
-
-    if (Array.isArray(val)) {
-      const result = []
-      val.forEach(val2 => {
-        if (val2 === undefined) {
-          return
+        if (val === undefined) {
+          return ''
         }
-        if (val2 === null) {
-          result.push(encode(key))
-        } else {
-          result.push(encode(key) + '=' + encode(val2))
+
+        if (val === null) {
+          return encode(key)
         }
+
+        if (Array.isArray(val)) {
+          const result = []
+          val.forEach(val2 => {
+            if (val2 === undefined) {
+              return
+            }
+            if (val2 === null) {
+              result.push(encode(key))
+            } else {
+              result.push(encode(key) + '=' + encode(val2))
+            }
+          })
+          return result.join('&')
+        }
+
+        return encode(key) + '=' + encode(val)
       })
-      return result.join('&')
-    }
-
-    return encode(key) + '=' + encode(val)
-  }).filter(x => x.length > 0).join('&') : null
+      .filter(x => x.length > 0)
+      .join('&')
+    : null
   return res ? `?${res}` : ''
 }

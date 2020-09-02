@@ -1,22 +1,27 @@
 import Vue, { ComponentOptions, PluginFunction, AsyncComponent } from 'vue'
 
 type Component = ComponentOptions<Vue> | typeof Vue | AsyncComponent
-type Dictionary < T > = { [key: string]: T }
+type Dictionary<T> = { [key: string]: T }
 type ErrorHandler = (err: Error) => void
 
 export type RouterMode = 'hash' | 'history' | 'abstract'
 export type RawLocation = string | Location
 export type RedirectOption = RawLocation | ((to: Route) => RawLocation)
-export type NavigationGuard < V extends Vue = Vue > = (
+export type NavigationGuardNext<V extends Vue = Vue> = (
+  to?: RawLocation | false | ((vm: V) => any) | void
+) => void
+
+export type NavigationGuard<V extends Vue = Vue> = (
   to: Route,
   from: Route,
-  next: (to?: RawLocation | false | ((vm: V) => any) | void) => void
+  next: NavigationGuardNext<V>
 ) => any
 
 export declare class VueRouter {
   constructor(options?: RouterOptions)
 
   app: Vue
+  options: RouterOptions
   mode: RouterMode
   currentRoute: Route
 
@@ -56,6 +61,26 @@ export declare class VueRouter {
   }
 
   static install: PluginFunction<never>
+  static version: string
+
+  static isNavigationFailure: (
+    error: any,
+    type?: number
+  ) => error is NavigationFailure
+  static NavigationFailureType: NavigationFailureType
+}
+
+export enum NavigationFailureType {
+  redirected= 2,
+  aborted= 4,
+  cancelled= 8,
+  duplicated= 16
+}
+
+export interface NavigationFailure extends Error {
+  to: Route
+  from: Route
+  type: number
 }
 
 type Position = { x: number; y: number }
@@ -86,37 +111,30 @@ export interface PathToRegexpOptions {
   end?: boolean
 }
 
-// 路由器配置
-export interface RouteConfig {
+interface _RouteConfigBase {
   path: string
   name?: string
-  component?: Component
-  // 一个路径下对应的多个组件，每个组件根据router-view的name属性来对应显示
-  /**
-   * {
-      path: '/other',
-      components: {
-        default: Baz,
-        a: Bar,
-        b: Foo
-      }
-    }
-
-    <router-view class="view two" name="a"></router-view>
-    <router-view class="view three" name="b"></router-view>
-   */
-  components?: Dictionary<Component>
+  children?: RouteConfig[]
   redirect?: RedirectOption
   alias?: string | string[]
-  children?: RouteConfig[]
   meta?: any
   beforeEnter?: NavigationGuard
-  props?: boolean | Object | RoutePropsFunction
   caseSensitive?: boolean
   pathToRegexpOptions?: PathToRegexpOptions
 }
 
-// 线路记录
+interface RouteConfigSingleView extends _RouteConfigBase {
+  component?: Component
+  props?: boolean | Object | RoutePropsFunction
+}
+
+interface RouteConfigMultipleViews extends _RouteConfigBase {
+  components?: Dictionary<Component>
+  props?: Dictionary<boolean | Object | RoutePropsFunction>
+}
+
+export type RouteConfig = RouteConfigSingleView | RouteConfigMultipleViews
+
 export interface RouteRecord {
   path: string
   regex: RegExp
@@ -153,7 +171,7 @@ export interface Location {
 // 线路
 export interface Route {
   path: string
-  name?: string
+  name?: string | null
   hash: string
   query: Dictionary<string | (string | null)[]>
   params: Dictionary<string>

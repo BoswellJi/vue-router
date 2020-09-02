@@ -32,17 +32,12 @@ export default {
     // 父组件 && 路由器根 !==父组件 
     // 首先实例化，根组件的routerview组件 （_routerRoot：根路由器组件）
     while (parent && parent._routerRoot !== parent) {
-      // 获取父组件的vnode
-      const vnodeData = parent.$vnode && parent.$vnode.data
-      if (vnodeData) {
-        // 存在routerview，深度++
-        if (vnodeData.routerView) {
-          depth++
-        }
-        // keepAlive && 
-        if (vnodeData.keepAlive && parent._inactive) {
-          inactive = true
-        }
+      const vnodeData = parent.$vnode ? parent.$vnode.data : {}
+      if (vnodeData.routerView) {
+        depth++
+      }
+      if (vnodeData.keepAlive && parent._directInactive && parent._inactive) {
+        inactive = true
       }
       // 获取父组件的父组件
       parent = parent.$parent
@@ -52,17 +47,32 @@ export default {
 
     // render previous view if the tree is inactive and kept-alive
     if (inactive) {
-      return h(cache[name], data, children)
+      const cachedData = cache[name]
+      const cachedComponent = cachedData && cachedData.component
+      if (cachedComponent) {
+        // #2301
+        // pass props
+        if (cachedData.configProps) {
+          fillPropsinData(cachedComponent, data, cachedData.route, cachedData.configProps)
+        }
+        return h(cachedComponent, data, children)
+      } else {
+        // render previous empty view
+        return h()
+      }
     }
     // 当前线路匹配到的路由，根据深度选择匹配额路由
     const matched = route.matched[depth]
-    // render empty node if no matched route
-    if (!matched) {
+    const component = matched && matched.components[name]
+
+    // render empty node if no matched route or no config component
+    if (!matched || !component) {
       cache[name] = null
       return h()
     }
 
-    const component = cache[name] = matched.components[name]
+    // cache component
+    cache[name] = { component }
 
     // attach instance registration hook 
     // this will be called in the instance's injected lifecycle hooks
@@ -95,30 +105,37 @@ export default {
       }
     }
 
-    // resolve props
-    let propsToPass = data.props = resolveProps(route, matched.props && matched.props[name])
-    if (propsToPass) {
-      // clone to prevent mutation
-      propsToPass = data.props = extend({}, propsToPass)
-      // pass non-declared props as attrs
-      const attrs = data.attrs = data.attrs || {}
-      for (const key in propsToPass) {
-        if (!component.props || !(key in component.props)) {
-          attrs[key] = propsToPass[key]
-          delete propsToPass[key]
-        }
-      }
+    const configProps = matched.props && matched.props[name]
+    // save route and configProps in cache
+    if (configProps) {
+      extend(cache[name], {
+        route,
+        configProps
+      })
+      fillPropsinData(component, data, route, configProps)
     }
     
     return h(component, data, children)
   }
 }
 
-/**
- * 解析属性,属性需要为对像格式
- * @param {*} route 
- * @param {*} config 
- */
+function fillPropsinData (component, data, route, configProps) {
+  // resolve props
+  let propsToPass = data.props = resolveProps(route, configProps)
+  if (propsToPass) {
+    // clone to prevent mutation
+    propsToPass = data.props = extend({}, propsToPass)
+    // pass non-declared props as attrs
+    const attrs = data.attrs = data.attrs || {}
+    for (const key in propsToPass) {
+      if (!component.props || !(key in component.props)) {
+        attrs[key] = propsToPass[key]
+        delete propsToPass[key]
+      }
+    }
+  }
+}
+
 function resolveProps (route, config) {
   switch (typeof config) {
     case 'undefined':

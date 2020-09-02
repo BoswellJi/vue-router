@@ -1,7 +1,8 @@
 /* @flow */
 
 import { _Vue } from '../install'
-import { warn, isError } from './warn'
+import { warn } from './warn'
+import { isError } from '../util/errors'
 
 /**
  * 解析异步组件，处理懒加载使用
