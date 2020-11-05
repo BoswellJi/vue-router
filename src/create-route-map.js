@@ -126,6 +126,7 @@ function addRouteRecord(
     // 实例
     instances: {},
     // 路线名称
+    enteredCbs: {},
     name,
     // 父路线
     parent,

@@ -224,6 +224,16 @@ function scrollToPosition (shouldScroll, position) {
   }
   // 配置了位置信息
   if (position) {
-    window.scrollTo(position.x, position.y)
+    // $flow-disable-line
+    if ('scrollBehavior' in document.documentElement.style) {
+      window.scrollTo({
+        left: position.x,
+        top: position.y,
+        // $flow-disable-line
+        behavior: shouldScroll.behavior
+      })
+    } else {
+      window.scrollTo(position.x, position.y)
+    }
   }
 }

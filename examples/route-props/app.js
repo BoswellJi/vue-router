@@ -25,6 +25,9 @@ const router = new VueRouter({
 
 new Vue({
   router,
+  created(){
+    // console.log();
+  },
   template: `
     <div id="app">
       <h1>Route props</h1>
