@@ -47,6 +47,11 @@ export declare class VueRouter {
   onReady(cb: Function, errorCb?: ErrorHandler): void
   onError(cb: ErrorHandler): void
   addRoutes(routes: RouteConfig[]): void
+
+  addRoute(parent: string, route: RouteConfig): void
+  addRoute(route: RouteConfig): void
+  getRoutes(): RouteRecordPublic[]
+
   resolve(
     to: RawLocation,
     current?: Route,
@@ -70,6 +75,8 @@ export declare class VueRouter {
   static NavigationFailureType: {
     [k in keyof typeof NavigationFailureType]: NavigationFailureType
   }
+
+  static START_LOCATION: Route
 }
 
 export enum NavigationFailureType {
@@ -106,7 +113,6 @@ export interface RouterOptions {
 
 type RoutePropsFunction = (route: Route) => Object
 
-// 路径中正则配置
 export interface PathToRegexpOptions {
   sensitive?: boolean
   strict?: boolean
@@ -159,7 +165,26 @@ export interface RouteRecord {
     | Dictionary<boolean | Object | RoutePropsFunction>
 }
 
-// 位置
+export interface RouteRecordPublic {
+  path: string
+  components: Dictionary<Component>
+  instances: Dictionary<Vue>
+  name?: string
+  redirect?: RedirectOption
+  meta: any
+  beforeEnter?: (
+    route: Route,
+    redirect: (location: RawLocation) => void,
+    next: () => void
+  ) => any
+  props:
+    | boolean
+    | Object
+    | RoutePropsFunction
+    | Dictionary<boolean | Object | RoutePropsFunction>
+}
+
+
 export interface Location {
   name?: string
   path?: string
@@ -170,7 +195,6 @@ export interface Location {
   replace?: boolean
 }
 
-// 线路
 export interface Route {
   path: string
   name?: string | null

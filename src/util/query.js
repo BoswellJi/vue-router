@@ -93,6 +93,9 @@ function parseQuery (query: string): Dictionary<string> {
   return res
 }
 
+const url = resolveQuery('http%3A%2F%2Flocalhost%3A8080%2Fbasic%2Ffoo%3Fdelay%3D200');
+console.log(url);
+
 /**
  * 序列化query
  * @param {*} obj 

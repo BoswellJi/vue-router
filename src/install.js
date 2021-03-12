@@ -4,7 +4,6 @@ import Link from './components/link'
 export let _Vue
 
 export function install (Vue) {
-  // install方法属性,已经被安装,不再次安装
   if (install.installed && _Vue === Vue) return
   install.installed = true
 
@@ -26,7 +25,6 @@ export function install (Vue) {
     }
   }
 
-  // Vue mixin,添加全局混入
   Vue.mixin({
     beforeCreate () {
       // 已加入router:路由器实例
@@ -52,22 +50,18 @@ export function install (Vue) {
     }
   })
 
-  // 给Vue构造函数添加原型属性,只读 路由器
   Object.defineProperty(Vue.prototype, '$router', {
     get () { return this._routerRoot._router }
   })
 
-  // 路由规则
   Object.defineProperty(Vue.prototype, '$route', {
     get () { return this._routerRoot._route }
   })
 
-  // 注册内部组件(路由视图与路由链接)
   Vue.component('RouterView', View)
   Vue.component('RouterLink', Link)
 
   const strats = Vue.config.optionMergeStrategies
   // use the same hook merging strategy for route hooks
-  // 进入路由之前 离开路由之前 更新路由之前
   strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created
 }
