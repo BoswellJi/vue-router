@@ -349,14 +349,14 @@ Since it's just a component, it works with `<transition>` and `<keep-alive>`. Wh
   Initial route location represented as a [Route Object](#the-route-object) where the router starts at. Can be used in navigation guards to differentiate the initial navigation.
 
   ```js
-  import Router from 'vue-router'
+  import VueRouter from 'vue-router'
 
-  const router = new Router({
+  const router = new VueRouter({
     // ...
   })
 
   router.beforeEach((to, from) => {
-    if (from === START_LOCATION) {
+    if (from === VueRouter.START_LOCATION) {
       // initial navigation
     }
   })
@@ -481,7 +481,7 @@ addRoute(parentName: string, route: RouteConfig): () => void
 
 > New in 3.5.0
 
-Get the list of all the active route records. **Note only documented properties are considered Public API**, avoid using any other propery e.g. `regex` as it doesn't exist on Vue Router 4.
+Get the list of all the active route records. **Note only documented properties are considered Public API**, avoid using any other property e.g. `regex` as it doesn't exist on Vue Router 4.
 
 Signature:
 
@@ -570,6 +570,12 @@ The route object can be found in multiple places:
   - type: `Object`
 
     An object that contains key/value pairs of the query string. For example, for a path `/foo?user=1`, we get `$route.query.user == 1`. If there is no query the value will be an empty object.
+
+- **\$route.meta**
+
+  - type: `Object`
+
+    An object that contains key/value pairs of the route meta object. If there are no meta properties the value will be an empty object.
 
 - **\$route.hash**
 
