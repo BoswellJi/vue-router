@@ -59,16 +59,8 @@ export class HTML5History extends History {
     window.history.go(n)
   }
 
-  /**
-   * push路由
-   * @param {*} location 跳转过去的地址
-   * @param {*} onComplete 完成回调
-   * @param {*} onAbort 废弃回调
-   */
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
-    // 当前线路，也就是从哪里来的线路
     const { current: fromRoute } = this
-    // 跳转线路
     this.transitionTo(location, route => {
       pushState(cleanPath(this.base + route.fullPath))
       handleScroll(this.router, route, fromRoute, false)

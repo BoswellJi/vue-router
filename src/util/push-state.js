@@ -31,7 +31,6 @@ export const supportsPushState =
  * @param {*} replace
  */
 export function pushState (url?: string, replace?: boolean) {
-  // 保存滚动位置信息
   saveScrollPosition()
   // try...catch the pushState call to get around Safari
   // DOM Exception 18 where it limits to 100 pushState calls
