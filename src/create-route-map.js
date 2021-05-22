@@ -4,6 +4,9 @@ import Regexp from 'path-to-regexp'
 import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
+/***
+ * 将用户的路由配置转成一张路由映射表
+ */
 export function createRouteMap (
   routes: Array<RouteConfig>,
   oldPathList?: Array<string>,
@@ -23,6 +26,7 @@ export function createRouteMap (
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
 
   routes.forEach(route => {
+    // 一条route也是一颗树结构，因为存在children
     addRouteRecord(pathList, pathMap, nameMap, route, parentRoute)
   })
 
@@ -48,9 +52,9 @@ export function createRouteMap (
   }
 
   return {
-    pathList,
-    pathMap,
-    nameMap
+    pathList, // 所有的路径
+    pathMap, // 路径到路由记录映射
+    nameMap //名称到路由记录映射,路由可能有名称，方便使用
   }
 }
 
@@ -89,6 +93,10 @@ function addRouteRecord (
     pathToRegexpOptions.sensitive = route.caseSensitive
   }
 
+  /***
+   * route中的信息
+   * 每条route(routes：用户配置的)有一个record实例，树形结构
+   */
   const record: RouteRecord = {
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
@@ -114,6 +122,7 @@ function addRouteRecord (
           : { default: route.props }
   }
 
+  // children api
   if (route.children) {
     // Warn if route is named, does not redirect and has a default child route.
     // If users navigate to this route by name, the default child will
@@ -146,9 +155,10 @@ function addRouteRecord (
 
   if (!pathMap[record.path]) {
     pathList.push(record.path)
-    pathMap[record.path] = record
+    pathMap[record.path] = record // 路经映射record
   }
 
+  // alias api
   if (route.alias !== undefined) {
     const aliases = Array.isArray(route.alias) ? route.alias : [route.alias]
     for (let i = 0; i < aliases.length; ++i) {
@@ -162,6 +172,7 @@ function addRouteRecord (
         continue
       }
 
+      // 存在别名需要创建对象的RouteRecord和path相同
       const aliasRoute = {
         path: alias,
         children: route.children
@@ -177,6 +188,7 @@ function addRouteRecord (
     }
   }
 
+  // name api
   if (name) {
     if (!nameMap[name]) {
       nameMap[name] = record

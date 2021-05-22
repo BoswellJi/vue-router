@@ -6,7 +6,6 @@ import { isError } from '../util/errors'
 
 /**
  * 解析异步组件，处理懒加载使用
- * @param {*} matched 线路
  */
 export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   // 目的线路 来源线路 下一个方法
@@ -19,28 +18,19 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
      * 组件实例 实例属性 线路 组件的key{default: <div> jmz </div>}
      */
     flatMapComponents(matched, (def, _, match, key) => {
-      // 如果他是一个函数和没有粘合cid
       // if it's a function and doesn't have cid attached,
-      // 假设他是一个异步组件解析函数
       // assume it's an async component resolve function.
-      // 我们不能使用vue的默认异步解析机制，因为我们想要组件要被解析才能导航
       // we are not using Vue's default async resolving mechanism because
       // we want to halt the navigation until the incoming component has been
       // resolved.
-      // 函数组件
       if (typeof def === 'function' && def.cid === undefined) {
-        // 异步组件
         hasAsync = true
         pending++
 
-        // Promise的成功 组件选项
         const resolve = once(resolvedDef => {
-          // es 模块
           if (isESModule(resolvedDef)) {
-            // 组件选项 默认组件
             resolvedDef = resolvedDef.default
           }
-          // 在异步工厂保存成功
           // save resolved on async factory in case it's used elsewhere
           def.resolved = typeof resolvedDef === 'function'
             ? resolvedDef
@@ -52,7 +42,6 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
           }
         })
 
-        // 失败
         const reject = once(reason => {
           const msg = `Failed to resolve async component ${key}: ${reason}`
           process.env.NODE_ENV !== 'production' && warn(false, msg)
@@ -66,10 +55,8 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
 
         let res
         try {
-          // 调用返回Promise实例
           res = def(resolve, reject)
         } catch (e) {
-          // 失败
           reject(e)
         }
         if (res) {

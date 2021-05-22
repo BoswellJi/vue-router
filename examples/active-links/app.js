@@ -14,9 +14,9 @@ const Users = {
     </div>
   `,
   // 给组件的路由的钩子函数
-  beforeRouteEnter(...args){
-    console.log(args);
-  },
+  beforeRouteEnter(...args) {
+    console.log(args)
+  }
 }
 
 const User = { template: '<div>{{ $route.params.username }}</div>' }
@@ -35,59 +35,41 @@ const Image = { template: '<div>{{ $route.params.imageId }}</div>' }
 const router = new VueRouter({
   mode: 'history',
   base: __dirname,
-  scrollBehavior(...args){
-    console.log(args);
+  scrollBehavior(...args) {
     return {
-      selector:'#',
-      offset:{
-        x : 0,
-        y : 0
+      selector: '#',
+      offset: {
+        x: 0,
+        y: 0
       }
-    };
+    }
   },
   routes: [
-    { path: '/', component: Home },
-    { path: '/about', component: About },
     {
-      path: '/redirect-gallery',
-      name: 'redirect-gallery',
-      redirect: { name: 'gallery' },
-      beforeRouteEnter(...args){
-        console.log(args)
-      }
+      path: '/',
+      component: Home
     },
-    {
-      path: '/redirect-image',
-      name: 'redirect-image',
-      redirect: { name: 'image', params: { imageId: 'image1' }}
-    },
-    {
-      path: '/users',
-      component: Users,
-      children: [{ path: ':username', name: 'user', component: User }]
-    },
-    {
-      path: '/gallery',
-      component: Gallery,
-      children: [
-        {
-          path: '',
-          name: 'gallery',
-          redirect: { name: 'image', params: { imageId: 'image1' }}
-        },
-        { path: ':imageId', component: Image, name: 'image' }
-      ]
-    }
+    { path: '/users', component: About }
   ]
 })
 
-router.afterEach((...args)=>{
+router.addRoutes([])
+
+router.afterEach((...args) => {
   // console.log(args);
+})
+
+router.beforeEach(() => {
+  //
 })
 
 new Vue({
   router,
-  
+  methods: {
+    nav() {
+      this.$router.push({ path: 'users' })
+    }
+  },
   template: `
     <div id="app">
       <h1>Active Links</h1>
@@ -95,7 +77,7 @@ new Vue({
         <li><router-link to="/">/</router-link></li>
         <li><router-link to="/" exact>/ (exact match)</router-link></li>
 
-        <li><router-link to="/users">/users</router-link></li>
+        <li @click="nav">/users</li>
         <li><router-link to="/users" exact>/users (exact match)</router-link></li>
 
         <li><router-link to="/users/evan">/users/evan</router-link></li>

@@ -16,6 +16,12 @@ export type Matcher = {
   getRoutes: () => Array<RouteRecord>;
 };
 
+/**
+ * 创建匹配器
+ * @param {*} routes 路线配置
+ * @param {*} router 路由器实例
+ * @returns 
+ */
 export function createMatcher (
   routes: Array<RouteConfig>,
   router: VueRouter
@@ -48,11 +54,15 @@ export function createMatcher (
     return pathList.map(path => pathMap[path])
   }
 
+  /***
+   * 匹配的时候创建Route
+   */
   function match (
     raw: RawLocation,
     currentRoute?: Route,
     redirectedFrom?: Location
   ): Route {
+    // 根据Route获取位置
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
 
@@ -175,6 +185,9 @@ export function createMatcher (
     return _createRoute(null, location)
   }
 
+  /***
+   * 创建路线 RouteRecord + Location = Route
+   */
   function _createRoute (
     record: ?RouteRecord,
     location: Location,

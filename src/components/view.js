@@ -20,9 +20,7 @@ export default {
     // so that components rendered by router-view can resolve named slots
     const h = parent.$createElement
     const name = props.name
-    // 父组件的线路实例
     const route = parent.$route
-    // 路由器视图缓存
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
     // determine current view depth, also check to see if the tree

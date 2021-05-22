@@ -83,6 +83,9 @@ export default class VueRouter {
     return this.history && this.history.current
   }
 
+  /***
+   * 每个Vue实例都会调用
+   */
   init (app: any /* Vue component instance */) {
     process.env.NODE_ENV !== 'production' &&
       assert(
@@ -130,6 +133,7 @@ export default class VueRouter {
         history.setupListeners()
         handleInitialScroll(routeOrError)
       }
+      // 初始化自动触发跳转
       history.transitionTo(
         history.getCurrentLocation(),
         setupListeners,

@@ -79,13 +79,14 @@ export class History {
   }
 
   transitionTo (
-    location: RawLocation,
+    location: RawLocation, // 基础路径
     onComplete?: Function,
     onAbort?: Function
   ) {
     let route
     // catch redirect option https://github.com/vuejs/vue-router/issues/3201
     try {
+      // 获取当前位置对应的路线 Route实例
       route = this.router.match(location, this.current)
     } catch (e) {
       this.errorCbs.forEach(cb => {
@@ -164,11 +165,17 @@ export class History {
       return abort(createNavigationDuplicatedError(current, route))
     }
 
+    /***
+     * 将当前route的RecordRoute与将跳转的route的RecordRoute对比
+     */
     const { updated, deactivated, activated } = resolveQueue(
       this.current.matched,
       route.matched
     )
 
+    /***
+     * 路由守护相关
+     */
     const queue: Array<?NavigationGuard> = [].concat(
       // in-component leave guards
       extractLeaveGuards(deactivated),
@@ -186,7 +193,7 @@ export class History {
       if (this.pending !== route) {
         return abort(createNavigationCancelledError(current, route))
       }
-      try {
+      try { 
         hook(route, current, (to: any) => {
           if (to === false) {
             // next(false) -> abort navigation, ensure current URL
@@ -217,6 +224,10 @@ export class History {
       }
     }
 
+    /***
+     * 异步任务队列，顺序执行，回调最后执行
+     * 将任务传递到iterator中执行
+     */
     runQueue(queue, iterator, () => {
       // wait until async components are resolved before
       // extracting in-component enter guards
