@@ -26,9 +26,7 @@ export const supportsPushState =
   })()
 
 /**
- * 添加状态
- * @param {*} url
- * @param {*} replace
+ * 对历史记录进行操作
  */
 export function pushState (url?: string, replace?: boolean) {
   saveScrollPosition()

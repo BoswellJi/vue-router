@@ -26,7 +26,7 @@ export function createRoute (
     query,
     params: location.params || {},
     fullPath: getFullPath(location, stringifyQuery),
-    matched: record ? formatMatch(record) : []
+    matched: record ? formatMatch(record) : [] // 匹配到的路由，从根路径开始匹配
   }
   if (redirectedFrom) {
     route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery)
@@ -70,6 +70,9 @@ function getFullPath (
   return (path || '/') + stringify(query) + hash
 }
 
+/***
+ * path,query，hash都相同
+ */
 export function isSameRoute (a: Route, b: ?Route, onlyPath: ?boolean): boolean {
   if (b === START) {
     return a === b

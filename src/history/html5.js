@@ -76,12 +76,10 @@ export class HTML5History extends History {
   }
 
   /**
-   * push 
+   *  
    */
   ensureURL (push?: boolean) {
-    // 获取当前根地址 !== 当前全路径
     if (getLocation(this.base) !== this.current.fullPath) {
-      // 获取当前地址
       const current = cleanPath(this.base + this.current.fullPath)
       // push
       push ? pushState(current) : replaceState(current)

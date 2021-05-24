@@ -143,6 +143,7 @@ export default class VueRouter {
 
     history.listen(route => {
       this.apps.forEach(app => {
+        // 触发Vue实例的响应式，更新路由视图
         app._route = route
       })
     })

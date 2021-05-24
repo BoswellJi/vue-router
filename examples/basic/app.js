@@ -73,7 +73,7 @@ const vueInstance = new Vue({
       <h1>Basic</h1>
       <ul>
         <li><router-link to="/">/</router-link></li>
-        <li><router-link to="/foo">/foo</router-link></li>
+        <li @click="gotoComponent">/foo</li>
         <li><router-link to="/bar">/bar</router-link></li>
         <router-link tag="li" to="/bar" :event="['mousedown', 'touchstart']">
           <a>/bar</a>
@@ -109,6 +109,9 @@ const vueInstance = new Vue({
       } else {
         this.$router.push('/', increment)
       }
+    },
+    gotoComponent(){
+      this.$router.push('/foo')
     }
   }
 }).$mount('#app')

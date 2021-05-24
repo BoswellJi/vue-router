@@ -62,7 +62,7 @@ export function createMatcher (
     currentRoute?: Route,
     redirectedFrom?: Location
   ): Route {
-    // 根据Route获取位置
+    // 获取下一个位置
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
 
@@ -92,6 +92,7 @@ export function createMatcher (
       return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
       location.params = {}
+      // 遍历匹配路径
       for (let i = 0; i < pathList.length; i++) {
         const path = pathList[i]
         const record = pathMap[path]

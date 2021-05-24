@@ -36,10 +36,6 @@ export function setupScroll () {
 
 /**
  * 处理滚动
- * @param {*} router 路由器实例
- * @param {*} to 去到哪个路线
- * @param {*} from 来自哪个路线
- * @param {*} isPop 是否弹出栈
  */
 export function handleScroll (
   router: Router,
@@ -47,14 +43,11 @@ export function handleScroll (
   from: Route,
   isPop: boolean
 ) {
-  // 组件不存在
   if (!router.app) {
     return
   }
 
-  // 路由器的选项属性 scrollBehavior
   const behavior = router.options.scrollBehavior
-  // 没有设置
   if (!behavior) {
     return
   }
@@ -64,20 +57,12 @@ export function handleScroll (
   }
 
   // wait until re-render finishes before scrolling
-  // 等待直到重新渲染完成开始滚动
-  // 下一个周期开始
   router.app.$nextTick(() => {
-    // 获取滚动位置
     const position = getScrollPosition()
-    // 调用滚动配置的滚动方法
     const shouldScroll = behavior.call(
-      // 路由器实例
       router,
-      // 到哪个线路去
       to,
-      // 从哪个线路来
       from,
-      // 是否弹出栈
       isPop ? position : null
     )
 
@@ -87,10 +72,8 @@ export function handleScroll (
 
     // 返回的是一个Promise实例
     if (typeof shouldScroll.then === 'function') {
-      // 调用执行
       shouldScroll
         .then(shouldScroll => {
-          // 执行滚动方法
           scrollToPosition((shouldScroll: any), position)
         })
         .catch(err => {

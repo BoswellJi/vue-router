@@ -123,3 +123,26 @@ Copyright (c) 2013-present Evan You
 </a>
 
 Special thanks to [BrowserStack](https://www.browserstack.com) for letting the maintainers use their service to debug browser specific issues.
+
+## 路由初始化流程
+
+- new VueRouter()
+- new Vue()
+- beforeCreate
+- _router.init
+- transitionTo
+
+## 路由跳转流程
+- this.$router.push:
+- history.push
+- history.transitionTo
+- this.$router.match：获取目标路由
+- normalizeLocation：获取目标地址
+- history.confirmTransition
+- 守护任务
+- history.confirmTransition回调
+- updateRoute
+- replaceState
+- pushState
+- handleScroll
+- afterHook

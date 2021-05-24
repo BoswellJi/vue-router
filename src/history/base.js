@@ -86,7 +86,7 @@ export class History {
     let route
     // catch redirect option https://github.com/vuejs/vue-router/issues/3201
     try {
-      // 获取当前位置对应的路线 Route实例
+      // 根据位置匹配对应的路线,Route实例
       route = this.router.match(location, this.current)
     } catch (e) {
       this.errorCbs.forEach(cb => {
@@ -166,7 +166,7 @@ export class History {
     }
 
     /***
-     * 将当前route的RecordRoute与将跳转的route的RecordRoute对比
+     * 将当前route的RecordRoute与下一个route的RecordRoute对比
      */
     const { updated, deactivated, activated } = resolveQueue(
       this.current.matched,
@@ -225,8 +225,7 @@ export class History {
     }
 
     /***
-     * 异步任务队列，顺序执行，回调最后执行
-     * 将任务传递到iterator中执行
+     * 执行守护任务（将任务队列中的任务，传到iterator函数中执行），
      */
     runQueue(queue, iterator, () => {
       // wait until async components are resolved before
