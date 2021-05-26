@@ -4,18 +4,12 @@ import { warn } from './warn'
 import Regexp from 'path-to-regexp'
 
 // $flow-disable-line
-/**
- * 正则编译缓存
- */
 const regexpCompileCache: {
   [key: string]: Function
 } = Object.create(null)
 
 /**
  * 填充 参数
- * @param {*} path 路径
- * @param {*} params 查询参数
- * @param {*} routeMsg 线路信息
  */
 export function fillParams (
   path: string,

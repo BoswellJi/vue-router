@@ -89,12 +89,17 @@ const router = new VueRouter({
 
 new Vue({
   router,
+  data:{
+    testClass:`testClass`,
+    test1Class:'test1Class',
+    test3Class:'test3Class'
+  },
   template: `
     <div id="app">
       <h1>Nested Routes</h1>
       <ul>
-        <li><router-link to="/parent">/parent</router-link></li>
-        <li><router-link to="/parent/foo">/parent/foo</router-link></li>
+        <li><router-link :exact="false" :active-class="testClass" :exact-active-class="test3Class"  to="/parent">/parent</router-link></li>
+        <li><router-link :exact-path-active-class="test1Class" to="/parent/foo">/parent/foo</router-link></li>
         <li><router-link to="/parent/bar">/parent/bar</router-link></li>
         <li><router-link to="/baz">/baz</router-link></li>
         <li><router-link to="/parent/qux/123">/parent/qux</router-link></li>

@@ -24,7 +24,9 @@ export function createRouteMap (
   const pathMap: Dictionary<RouteRecord> = oldPathMap || Object.create(null)
   // $flow-disable-line
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
-
+  /***
+   * 
+   */
   routes.forEach(route => {
     // 一条route也是一颗树结构，因为存在children
     addRouteRecord(pathList, pathMap, nameMap, route, parentRoute)
@@ -100,6 +102,7 @@ function addRouteRecord (
   const record: RouteRecord = {
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
+    // 多视图router-view
     components: route.components || { default: route.component },
     alias: route.alias
       ? typeof route.alias === 'string'

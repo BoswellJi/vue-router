@@ -20,6 +20,7 @@ export default {
     // so that components rendered by router-view can resolve named slots
     const h = parent.$createElement
     const name = props.name
+    // 当前路由
     const route = parent.$route
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
@@ -27,9 +28,9 @@ export default {
     // has been toggled inactive but kept-alive.
     let depth = 0
     let inactive = false
-    
-    // 父组件 && 路由器根 !==父组件 
+     
     // 首先实例化，根组件的routerview组件 （_routerRoot：根路由器组件）
+    // 从一级路由开始找
     while (parent && parent._routerRoot !== parent) {
       const vnodeData = parent.$vnode ? parent.$vnode.data : {}
       if (vnodeData.routerView) {
@@ -38,10 +39,9 @@ export default {
       if (vnodeData.keepAlive && parent._directInactive && parent._inactive) {
         inactive = true
       }
-      // 获取父组件的父组件
       parent = parent.$parent
     }
-    // 路由器视图深度，嵌套几层routerview组件
+    // 路由视图嵌套的深度，嵌套几层routerview组件
     data.routerViewDepth = depth
 
     // render previous view if the tree is inactive and kept-alive
@@ -60,8 +60,9 @@ export default {
         return h()
       }
     }
-    // 当前线路匹配到的路由，根据深度选择匹配额路由
+    // 从一级路由开始，直到最后一级路由
     const matched = route.matched[depth]
+    // 路由对应的组件
     const component = matched && matched.components[name]
 
     // render empty node if no matched route or no config component

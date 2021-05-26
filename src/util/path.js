@@ -23,7 +23,6 @@ export function resolvePath (
     return base + relative
   }
 
-  // 
   const stack = base.split('/')
 
   // remove trailing segment if:
@@ -64,26 +63,20 @@ export function parsePath (path: string): {
   let hash = ''
   let query = ''
 
-  // 找到hash开始索引
   const hashIndex = path.indexOf('#')
-  // 找到
   if (hashIndex >= 0) {
-    // 获取路径上的hash
     hash = path.slice(hashIndex)
-    // 获取路径
     path = path.slice(0, hashIndex)
   }
 
-  // 找到路径上的查询字符串
   const queryIndex = path.indexOf('?')
   if (queryIndex >= 0) {
-    // 获取查询字符串
     query = path.slice(queryIndex + 1)
-    // 找到路径
     path = path.slice(0, queryIndex)
   }
 
-  // 返回路径,查询字符串,hash值
+  // www.badi.com/page?name=34#jjj
+  // {path: "www.badi.com/page", query: "name=34", hash: "#jjj"}
   return {
     path,
     query,
@@ -92,7 +85,6 @@ export function parsePath (path: string): {
 }
 /**
  * 将路径中的//转换为/
- * @param {*} path  路径
  */
 export function cleanPath (path: string): string {
   return path.replace(/\/\//g, '/')

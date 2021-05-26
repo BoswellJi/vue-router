@@ -45,12 +45,14 @@ export default {
   render (h: Function) {
     const router = this.$router
     const current = this.$route
+    // 根据目标路径以及当前路由，获取目标路由信息
     const { location, route, href } = router.resolve(
       this.to,
       current,
       this.append
     )
 
+    // 处理元素配置的样式/common,single
     const classes = {}
     const globalActiveClass = router.options.linkActiveClass
     const globalExactActiveClass = router.options.linkExactActiveClass

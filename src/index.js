@@ -75,6 +75,9 @@ export default class VueRouter {
     }
   }
 
+  /***
+   * 根据地址，当前路由
+   */
   match (raw: RawLocation, current?: Route, redirectedFrom?: Location): Route {
     return this.matcher.match(raw, current, redirectedFrom)
   }
@@ -237,6 +240,7 @@ export default class VueRouter {
     current = current || this.history.current
     const location = normalizeLocation(to, current, append, this)
     const route = this.match(location, current)
+    // 排除基础路径的剩余路径
     const fullPath = route.redirectedFrom || route.fullPath
     const base = this.history.base
     const href = createHref(base, fullPath, this.mode)

@@ -18,6 +18,7 @@ export function createRoute (
     query = clone(query)
   } catch (e) {}
 
+  // 目标路由：包含所有相关信息
   const route: Route = {
     name: location.name || (record && record.name),
     meta: (record && record.meta) || {},
@@ -26,6 +27,7 @@ export function createRoute (
     query,
     params: location.params || {},
     fullPath: getFullPath(location, stringifyQuery),
+    // 这里是除了基础路径之外的其他路径的RecordRoute实例
     matched: record ? formatMatch(record) : [] // 匹配到的路由，从根路径开始匹配
   }
   if (redirectedFrom) {
@@ -53,6 +55,9 @@ export const START = createRoute(null, {
   path: '/'
 })
 
+/***
+ * 子级到父级递归
+ */
 function formatMatch (record: ?RouteRecord): Array<RouteRecord> {
   const res = []
   while (record) {
