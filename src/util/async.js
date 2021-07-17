@@ -7,8 +7,8 @@ export function runQueue (queue: Array<?NavigationGuard>, fn: Function, cb: Func
     if (index >= queue.length) {
       cb()
     } else {
-      // 队列中有守护队列中存在路由守护，线执行守护在，执行回调路由执行
-      if (queue[index]) { 
+      // 队列中有守护队列中存在路由守护，先执行守护在，执行回调路由执行
+      if (queue[index]) {
         fn(queue[index], () => {
           step(index + 1)
         })

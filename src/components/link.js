@@ -43,6 +43,7 @@ export default {
     }
   },
   render (h: Function) {
+    console.log('render link')
     const router = this.$router
     const current = this.$route
     // 根据目标路径以及当前路由，获取目标路由信息

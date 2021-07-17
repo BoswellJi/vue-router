@@ -26,7 +26,7 @@ export const supportsPushState =
   })()
 
 /**
- * 对历史记录进行操作
+ * 对历史会话记录进行操作
  */
 export function pushState (url?: string, replace?: boolean) {
   saveScrollPosition()

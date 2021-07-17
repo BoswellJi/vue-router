@@ -70,7 +70,6 @@ export function handleScroll (
       return
     }
 
-    // 返回的是一个Promise实例
     if (typeof shouldScroll.then === 'function') {
       shouldScroll
         .then(shouldScroll => {
@@ -82,7 +81,6 @@ export function handleScroll (
           }
         })
     } else {
-      // 不是Promise实例，直接执行
       scrollToPosition(shouldScroll, position)
     }
   })
@@ -141,7 +139,7 @@ function isValidPosition (obj: Object): boolean {
 // 规范化位置信息
 function normalizePosition (obj: Object): Object {
   return {
-    // 是否为数值， window.pageXOffset： 窗口距离浏览器左边框的距离（在左边为正，在右边为负）
+    // 是否为数值， window.pageXOffset： 窗口距离浏览器左边框的距离（在左边为正，在右边为负）,有滚动跳的情况下
     x: isNumber(obj.x) ? obj.x : window.pageXOffset,
     y: isNumber(obj.y) ? obj.y : window.pageYOffset
   }
@@ -149,11 +147,9 @@ function normalizePosition (obj: Object): Object {
 
 /**
  * 规范化偏移量
- * @param {*} obj 偏移量对象
  */
 function normalizeOffset (obj: Object): Object {
   return {
-    // 是否为数值
     x: isNumber(obj.x) ? obj.x : 0,
     y: isNumber(obj.y) ? obj.y : 0
   }
@@ -168,44 +164,30 @@ const hashStartsWithNumberRE = /^#\d/
 
 /**
  * 滚动到指定位置
- * @param {*} shouldScroll 自定义滚动的配置对象
- * @param {*} position 
  */
 function scrollToPosition (shouldScroll, position) {
-  // shouldScroll是否是对象
   const isObject = typeof shouldScroll === 'object'
-  // 是对象，selector属性未字符串，第一种是根据选中的元素指定位置
   if (isObject && typeof shouldScroll.selector === 'string') {
-    // 如果选择器包含一个像#mian[data-attr]这样更复杂的查询，getElementById将会仍然失败
     // getElementById would still fail if the selector contains a more complicated query like #main[data-attr]
-    // 但是同时，使用id和额外选择器选中元素不会更敏感
     // but at the same time, it doesn't make much sense to select an element with an id and an extra selector
     // #jmz
     const el = hashStartsWithNumberRE.test(shouldScroll.selector) // $flow-disable-line
       ? document.getElementById(shouldScroll.selector.slice(1)) // $flow-disable-line
       : document.querySelector(shouldScroll.selector)
 
-      // dom元素存在
     if (el) {
-      // 偏移量
       let offset =
         shouldScroll.offset && typeof shouldScroll.offset === 'object'
           ? shouldScroll.offset
           : {}
-        // 规范偏移量
       offset = normalizeOffset(offset)
-      // 获取元素的最终位置
       position = getElementPosition(el, offset)
-      // 位置是否有效
     } else if (isValidPosition(shouldScroll)) {
-      // 规范化位置信息
       position = normalizePosition(shouldScroll)
     }
-    // 参数是否合格
   } else if (isObject && isValidPosition(shouldScroll)) {
     position = normalizePosition(shouldScroll)
   }
-  // 配置了位置信息
   if (position) {
     // $flow-disable-line
     if ('scrollBehavior' in document.documentElement.style) {

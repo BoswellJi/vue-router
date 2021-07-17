@@ -20,7 +20,7 @@ export type Matcher = {
  * 创建匹配器
  * @param {*} routes 路线配置
  * @param {*} router 路由器实例
- * @returns 
+ * @returns
  */
 export function createMatcher (
   routes: Array<RouteConfig>,
@@ -54,7 +54,7 @@ export function createMatcher (
     return pathList.map(path => pathMap[path])
   }
 
-  /***
+  /** *
    * 匹配的时候创建Route
    */
   function match (
@@ -92,10 +92,10 @@ export function createMatcher (
       return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
       location.params = {}
-      // 遍历匹配路径
       for (let i = 0; i < pathList.length; i++) {
         const path = pathList[i]
         const record = pathMap[path]
+        // 查找路由是否存在,存在就创建它的实例
         if (matchRoute(record.regex, location.path, location.params)) {
           return _createRoute(record, location, redirectedFrom)
         }
@@ -186,7 +186,7 @@ export function createMatcher (
     return _createRoute(null, location)
   }
 
-  /***
+  /** *
    * 创建路线 RouteRecord + Location = Route
    */
   function _createRoute (

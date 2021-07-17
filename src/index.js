@@ -75,7 +75,7 @@ export default class VueRouter {
     }
   }
 
-  /***
+  /** *
    * 根据地址，当前路由
    */
   match (raw: RawLocation, current?: Route, redirectedFrom?: Location): Route {
@@ -86,7 +86,7 @@ export default class VueRouter {
     return this.history && this.history.current
   }
 
-  /***
+  /** *
    * 每个Vue实例都会调用
    */
   init (app: any /* Vue component instance */) {
@@ -136,7 +136,6 @@ export default class VueRouter {
         history.setupListeners()
         handleInitialScroll(routeOrError)
       }
-      // 初始化自动触发跳转
       history.transitionTo(
         history.getCurrentLocation(),
         setupListeners,
@@ -146,7 +145,6 @@ export default class VueRouter {
 
     history.listen(route => {
       this.apps.forEach(app => {
-        // 触发Vue实例的响应式，更新路由视图
         app._route = route
       })
     })
