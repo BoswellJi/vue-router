@@ -47,6 +47,7 @@ export class HashHistory extends History {
         }
       })
     }
+    // 这里是为了用户手动更新url
     const eventType = supportsPushState ? 'popstate' : 'hashchange'
     window.addEventListener(
       eventType,
@@ -121,7 +122,7 @@ function ensureSlash (): boolean {
 }
 
 /**
- * 获取hash
+ * 获取当前url中的hash
  */
 export function getHash (): string {
   // We can't use window.location.hash here because it's not

@@ -21,15 +21,14 @@ export function install (Vue) {
 
   Vue.mixin({
     beforeCreate () {
-      // 只有new Vue()实例时，添加的router，
+      // 这里是new Vue({router:router})来的
       if (isDef(this.$options.router)) {
-        this._routerRoot = this 
+        this._routerRoot = this
         this._router = this.$options.router
-        // 开始初始化
         this._router.init(this)
         Vue.util.defineReactive(this, '_route', this._router.history.current)
       } else {
-        // Vue.component()
+        // new Sub()
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
       registerInstance(this, this)

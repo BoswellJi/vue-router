@@ -12,15 +12,13 @@ export default {
     }
   },
   render (_, { props, children, parent, data }) {
-
-    // used by devtools to display a router-view badge
+    // used by devtools to display a router-view badge （vnode data
     data.routerView = true
 
     // directly use parent context's createElement() function
     // so that components rendered by router-view can resolve named slots
     const h = parent.$createElement
     const name = props.name
-    // 当前路由
     const route = parent.$route
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
@@ -28,9 +26,8 @@ export default {
     // has been toggled inactive but kept-alive.
     let depth = 0
     let inactive = false
-     
-    // 首先实例化，根组件的routerview组件 （_routerRoot：根路由器组件）
-    // 从一级路由开始找
+
+    // （_routerRoot：new Vue() 来的）
     while (parent && parent._routerRoot !== parent) {
       const vnodeData = parent.$vnode ? parent.$vnode.data : {}
       if (vnodeData.routerView) {
@@ -41,9 +38,9 @@ export default {
       }
       parent = parent.$parent
     }
-    // 路由视图嵌套的深度，嵌套几层routerview组件
     data.routerViewDepth = depth
 
+    // 渲染使用keep-alive组件的router-view，每次都会将切换的组件实例缓存
     // render previous view if the tree is inactive and kept-alive
     if (inactive) {
       const cachedData = cache[name]
@@ -60,9 +57,9 @@ export default {
         return h()
       }
     }
-    // 从一级路由开始，直到最后一级路由
+
+    // 路由匹配的路线，组件
     const matched = route.matched[depth]
-    // 路由对应的组件
     const component = matched && matched.components[name]
 
     // render empty node if no matched route or no config component
@@ -74,7 +71,7 @@ export default {
     // cache component
     cache[name] = { component }
 
-    // attach instance registration hook 
+    // attach instance registration hook
     // this will be called in the instance's injected lifecycle hooks
     data.registerRouteInstance = (vm, val) => {
       // val could be undefined for unregistration
@@ -87,7 +84,6 @@ export default {
       }
     }
 
-    // vnode的hook,重写hook
     // also register instance in prepatch hook
     // in case the same component instance is reused across different routes
     ;(data.hook || (data.hook = {})).prepatch = (_, vnode) => {
@@ -119,7 +115,7 @@ export default {
       })
       fillPropsinData(component, data, route, configProps)
     }
-    
+
     return h(component, data, children)
   }
 }

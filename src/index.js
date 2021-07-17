@@ -45,6 +45,7 @@ export default class VueRouter {
     this.beforeHooks = []
     this.resolveHooks = []
     this.afterHooks = []
+    // 路由器控制中心
     this.matcher = createMatcher(options.routes || [], this)
 
     let mode = options.mode || 'hash'
@@ -136,7 +137,9 @@ export default class VueRouter {
         history.setupListeners()
         handleInitialScroll(routeOrError)
       }
+      // 路由开始跳转
       history.transitionTo(
+        // 最初始化的时候的地址栏中的默认url
         history.getCurrentLocation(),
         setupListeners,
         setupListeners
@@ -145,6 +148,7 @@ export default class VueRouter {
 
     history.listen(route => {
       this.apps.forEach(app => {
+        // 这里是响应式属性，在install中定义
         app._route = route
       })
     })
@@ -177,6 +181,7 @@ export default class VueRouter {
         this.history.push(location, resolve, reject)
       })
     } else {
+      // 指定跳转的路径信息
       this.history.push(location, onComplete, onAbort)
     }
   }

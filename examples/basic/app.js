@@ -31,7 +31,7 @@ window.removeEventListener = function (name, handler) {
 Vue.use(VueRouter)
 
 // 2. Define route components
-const Home = { template: '<div>home</div>' }
+const Home = { template: '<div>home<router-view></router-view></div>' }
 const Foo = { template: '<div>foo</div>' }
 const Bar = { template: '<div>bar</div>' }
 const Unicode = { template: '<div>unicode</div>' }
@@ -41,10 +41,14 @@ const Query = { template: '<div>query: "{{ $route.params.q }}"</div>' }
 const router = new VueRouter({
   mode: 'history',
   base: __dirname,
-  linkActiveClass:'jmz',
-  linkExactActiveClass:'jmzExact',
+  linkActiveClass: 'jmz',
+  linkExactActiveClass: 'jmzExact',
   routes: [
-    { path: '/', component: Home },
+    { path: '/', component: Home, children: [
+      {
+        path: '/jmz', component: Home
+      }
+    ] },
     { path: '/foo', component: Foo },
     { path: '/bar', component: Bar },
     { path: encodeURI('/é'), component: Unicode },
@@ -98,7 +102,7 @@ const vueInstance = new Vue({
       <router-view class="view"></router-view>
     </div>
   `,
-  created(){
+  created () {
     console.log(this.$route)
   },
   methods: {
@@ -110,7 +114,7 @@ const vueInstance = new Vue({
         this.$router.push('/', increment)
       }
     },
-    gotoComponent(){
+    gotoComponent () {
       this.$router.push('/foo')
     }
   }

@@ -18,15 +18,15 @@ export function createRoute (
     query = clone(query)
   } catch (e) {}
 
-  // 目标路由：包含所有相关信息
+  // 路由线路
   const route: Route = {
-    name: location.name || (record && record.name), // 名称
-    meta: (record && record.meta) || {}, // 元素据
-    path: location.path || '/', // 路径
-    hash: location.hash || '', // 哈希值
-    query, // 查找字符串
-    params: location.params || {}, // 路由参数
-    fullPath: getFullPath(location, stringifyQuery), // 完整路径
+    name: location.name || (record && record.name),
+    meta: (record && record.meta) || {},
+    path: location.path || '/',
+    hash: location.hash || '',
+    query,
+    params: location.params || {},
+    fullPath: getFullPath(location, stringifyQuery),
     // 这里是除了基础路径之外的其他路径的RecordRoute实例
     matched: record ? formatMatch(record) : [] // 匹配到的路由记录，从根路径开始匹配[{path:'a',component:aaa,children:[{path:'c'}]}]， 匹配到/a /a/b 对应的路由记录
   }

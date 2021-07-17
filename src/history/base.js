@@ -78,15 +78,18 @@ export class History {
     this.errorCbs.push(errorCb)
   }
 
+  /** *
+   * 过度到
+   */
   transitionTo (
-    location: RawLocation, // 基础路径
+    location: RawLocation, // 当前需要跳转的
     onComplete?: Function,
     onAbort?: Function
   ) {
     let route
     // catch redirect option https://github.com/vuejs/vue-router/issues/3201
     try {
-      // 根据位置匹配对应的路线,Route实例
+      // 根据位置匹配对应的路线
       route = this.router.match(location, this.current)
     } catch (e) {
       this.errorCbs.forEach(cb => {
@@ -134,6 +137,9 @@ export class History {
     )
   }
 
+  /** *
+   * 路由跳转
+   */
   confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
     const current = this.current
     this.pending = route
@@ -165,7 +171,7 @@ export class History {
       return abort(createNavigationDuplicatedError(current, route))
     }
 
-    /***
+    /** *
      * 将当前route的RecordRoute与下一个route的RecordRoute对比
      */
     const { updated, deactivated, activated } = resolveQueue(
@@ -173,7 +179,7 @@ export class History {
       route.matched
     )
 
-    /***
+    /** *
      * 路由守护相关
      */
     const queue: Array<?NavigationGuard> = [].concat(
@@ -193,7 +199,7 @@ export class History {
       if (this.pending !== route) {
         return abort(createNavigationCancelledError(current, route))
       }
-      try { 
+      try {
         hook(route, current, (to: any) => {
           if (to === false) {
             // next(false) -> abort navigation, ensure current URL
@@ -224,7 +230,7 @@ export class History {
       }
     }
 
-    /***
+    /** *
      * 执行守护任务（将任务队列中的任务，传到iterator函数中执行），
      */
     runQueue(queue, iterator, () => {
@@ -247,6 +253,9 @@ export class History {
     })
   }
 
+  /** *
+   * 更新当前路由
+   */
   updateRoute (route: Route) {
     this.current = route
     this.cb && this.cb(route)
