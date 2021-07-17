@@ -38,6 +38,7 @@ export class HTML5History extends History {
       if (this.current === START && location === this._startLocation) {
         return
       }
+
       this.transitionTo(location, route => {
         if (supportsScroll) {
           handleScroll(router, route, current, true)
@@ -63,49 +64,37 @@ export class HTML5History extends History {
     }, onAbort)
   }
 
-  /**
-   * 替换地址
-   */
   replace (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
-      replaceState(cleanPath(this.base + route.fullPath)) 
+      replaceState(cleanPath(this.base + route.fullPath))
       handleScroll(this.router, route, fromRoute, false)
       onComplete && onComplete(route)
     }, onAbort)
   }
 
-  /**
-   *  
-   */
   ensureURL (push?: boolean) {
     if (getLocation(this.base) !== this.current.fullPath) {
       const current = cleanPath(this.base + this.current.fullPath)
-      // push
       push ? pushState(current) : replaceState(current)
     }
   }
 
-  /**
-   * this.base：基础位置，例如项目放在app文件夹下 /app/就是基础路径
-   * 获取当前位置
-   */
   getCurrentLocation (): string {
     return getLocation(this.base)
   }
 }
 
-/**
- * 获取当前位置
- */
 export function getLocation (base: string): string {
-  // http://www.baidu.com/abc
-
-  // /abc/
-  let path = decodeURI(window.location.pathname)
-  if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
+  let path = window.location.pathname
+  const pathLowerCase = path.toLowerCase()
+  const baseLowerCase = base.toLowerCase()
+  // base="/a" shouldn't turn path="/app" into "/a/pp"
+  // https://github.com/vuejs/vue-router/issues/3555
+  // so we ensure the trailing slash in the base
+  if (base && ((pathLowerCase === baseLowerCase) ||
+    (pathLowerCase.indexOf(cleanPath(baseLowerCase + '/')) === 0))) {
     path = path.slice(base.length)
   }
-  // /abc/ + '' + ''
   return (path || '/') + window.location.search + window.location.hash
 }

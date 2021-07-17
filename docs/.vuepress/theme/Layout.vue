@@ -1,42 +1,47 @@
 <template>
-  <ParentLayout>
-    <template #page-top>
-      <CarbonAds
-        v-if="$site.themeConfig.carbonAds"
-        :key="'ca:' + $page.path"
-        :code="$site.themeConfig.carbonAds.carbon"
-        :placement="$site.themeConfig.carbonAds.placement"
-      />
-    </template>
-    <template #page-bottom>
-      <BuySellAds
-        v-if="$site.themeConfig.carbonAds"
-        :key="'bsa:' + $page.path"
-        :code="$site.themeConfig.carbonAds.custom"
-        :placement="$site.themeConfig.carbonAds.placement"
-      />
-    </template>
-    <template #sidebar-bottom>
-      <div class="sponsors">
-        <a
-          href="https://github.com/sponsors/posva"
-          target="_blank"
-          rel="noopener"
-          >Sponsors</a
-        >
+  <div
+    class="main-container"
+    :class="{ 'has-top-banner': showTopBanner }"
+  >
+    <ParentLayout>
+      <template #page-top>
+        <CarbonAds
+          v-if="$site.themeConfig.carbonAds"
+          :key="'ca:' + $page.path"
+          :code="$site.themeConfig.carbonAds.carbon"
+          :placement="$site.themeConfig.carbonAds.placement"
+        />
+      </template>
+      <template #page-bottom>
+        <BuySellAds
+          v-if="$site.themeConfig.carbonAds"
+          :key="'bsa:' + $page.path"
+          :code="$site.themeConfig.carbonAds.custom"
+          :placement="$site.themeConfig.carbonAds.placement"
+        />
+      </template>
+      <template #sidebar-bottom>
+        <div class="sponsors">
+          <a
+            href="https://github.com/sponsors/posva"
+            target="_blank"
+            rel="noopener"
+            >Sponsors</a
+          >
 
-        <a
-          v-for="sponsor in sponsors.gold"
-          :href="sponsor.href"
-          :key="sponsor.href"
-          target="_blank"
-          rel="noopener"
-        >
-          <img :src="sponsor.imgSrcLight" :alt="sponsor.alt" />
-        </a>
-      </div>
-    </template>
-  </ParentLayout>
+          <a
+            v-for="sponsor in sponsors.gold"
+            :href="sponsor.href"
+            :key="sponsor.href"
+            target="_blank"
+            rel="noopener"
+          >
+            <img :src="sponsor.imgSrcLight" :alt="sponsor.alt" />
+          </a>
+        </div>
+      </template>
+    </ParentLayout>
+  </div>
 </template>
 
 <script>
@@ -47,15 +52,16 @@ import sponsors from '../components/sponsors.json'
 
 export default {
   name: 'Layout',
-
   components: {
     ParentLayout,
     CarbonAds,
     BuySellAds
   },
-
-  created() {
-    this.sponsors = sponsors
+  data () {
+    return {
+      sponsors,
+      showTopBanner: false
+    }
   }
 }
 </script>
