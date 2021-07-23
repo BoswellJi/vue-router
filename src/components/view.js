@@ -38,6 +38,7 @@ export default {
       }
       parent = parent.$parent
     }
+    // 确定路由嵌套的深度
     data.routerViewDepth = depth
 
     // 渲染使用keep-alive组件的router-view，每次都会将切换的组件实例缓存
@@ -58,7 +59,7 @@ export default {
       }
     }
 
-    // 路由匹配的路线，组件
+    // 路由匹配的路线记录，组件 
     const matched = route.matched[depth]
     const component = matched && matched.components[name]
 

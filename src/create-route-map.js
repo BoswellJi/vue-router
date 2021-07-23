@@ -8,25 +8,23 @@ import { assert, warn } from './util/warn'
  * 将用户的路由配置转成一张路由映射表
  */
 export function createRouteMap (
-  routes: Array<RouteConfig>,
-  oldPathList?: Array<string>,
-  oldPathMap?: Dictionary<RouteRecord>,
-  oldNameMap?: Dictionary<RouteRecord>,
-  parentRoute?: RouteRecord
+  routes: Array<RouteConfig>, // 路线
+  oldPathList?: Array<string>, // 老路径列表
+  oldPathMap?: Dictionary<RouteRecord>, // 老路径映射
+  oldNameMap?: Dictionary<RouteRecord>, // 老路线名称映射
+  parentRoute?: RouteRecord // 父路线
 ): {
   pathList: Array<string>,
   pathMap: Dictionary<RouteRecord>,
   nameMap: Dictionary<RouteRecord>
 } {
-  // the path list is used to control path matching priority
+  // the path list is used to control path matching priority 整个routes的path
   const pathList: Array<string> = oldPathList || []
   // $flow-disable-line
   const pathMap: Dictionary<RouteRecord> = oldPathMap || Object.create(null)
   // $flow-disable-line
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
-  /***
-   * 
-   */
+  
   routes.forEach(route => {
     // 一条route也是一颗树结构，因为存在children
     addRouteRecord(pathList, pathMap, nameMap, route, parentRoute)

@@ -12,7 +12,7 @@ export class HTML5History extends History {
 
   constructor (router: Router, base: ?string) {
     super(router, base)
-
+    // 获取地址栏中的url的路径
     this._startLocation = getLocation(this.base)
   }
 
@@ -85,6 +85,9 @@ export class HTML5History extends History {
   }
 }
 
+/***
+ * 根据基础路径路由地址
+ */
 export function getLocation (base: string): string {
   let path = window.location.pathname
   const pathLowerCase = path.toLowerCase()

@@ -43,7 +43,6 @@ export default {
     }
   },
   render (h: Function) {
-    console.log('render link')
     const router = this.$router
     const current = this.$route
     // 根据目标路径以及当前路由，获取目标路由信息
@@ -113,6 +112,7 @@ export default {
         isActive: classes[activeClass],
         isExactActive: classes[exactActiveClass]
       })
+      // 插槽编译之后会变成函数，这里传参使用，所以作用域插槽可以拿到传参
 
     if (scopedSlot) {
       if (process.env.NODE_ENV !== 'production' && !this.custom) {

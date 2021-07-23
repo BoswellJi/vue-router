@@ -137,10 +137,10 @@ export class History {
     )
   }
 
-  /** *
+  /***
    * 路由跳转
    */
-  confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
+  confirmTransition (route: Route /*即将跳转的路线*/, onComplete: Function, onAbort?: Function) {
     const current = this.current
     this.pending = route
     const abort = err => {
@@ -335,7 +335,7 @@ function extractGuards (
         ? guard.map(guard => bind(guard, instance, match, key))
         : bind(guard, instance, match, key)
     }
-  })
+  });
   return flatten(reverse ? guards.reverse() : guards)
 }
 
@@ -350,6 +350,9 @@ function extractGuard (
   return def.options[key]
 }
 
+/***
+ * 提取路由离开时的守护
+ */
 function extractLeaveGuards (deactivated: Array<RouteRecord>): Array<?Function> {
   return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
 }

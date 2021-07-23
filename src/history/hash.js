@@ -8,8 +8,7 @@ import { setupScroll, handleScroll } from '../util/scroll'
 import { pushState, replaceState, supportsPushState } from '../util/push-state'
 
 export class HashHistory extends History {
-  /**
-   */
+
   constructor (router: Router, base: ?string, fallback: boolean) {
     super(router, base)
     if (fallback && checkFallback(this.base)) {

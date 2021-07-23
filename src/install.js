@@ -14,7 +14,6 @@ export function install (Vue) {
   const registerInstance = (vm, callVal) => {
     let i = vm.$options._parentVnode
     if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) { // registerRouteInstance: router-link组件
-      // 注册组件实例
       i(vm, callVal)
     }
   }
@@ -38,10 +37,21 @@ export function install (Vue) {
     }
   })
 
+  // 路由器实例,唯一的
   Object.defineProperty(Vue.prototype, '$router', {
     get () { return this._routerRoot._router }
   })
 
+  // 当前的路由,会在
+  /***
+   *history.listen(function (route) {
+      _this.apps.forEach(function (app) {
+        // 这里是响应式属性，在install中定义
+        app._route = route;
+      });
+    });
+    回调中被修改
+  */
   Object.defineProperty(Vue.prototype, '$route', {
     get () { return this._routerRoot._route }
   })

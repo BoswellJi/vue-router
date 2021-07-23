@@ -39,11 +39,17 @@ export default class VueRouter {
   afterHooks: Array<?AfterNavigationHook>
 
   constructor (options: RouterOptions = {}) {
+    // 当前Vue实例
     this.app = null
+
     this.apps = []
     this.options = options
+
+    // 路由跳转之前
     this.beforeHooks = []
+    // 异步组件被解析后
     this.resolveHooks = []
+    // 路由跳转之后
     this.afterHooks = []
     // 路由器控制中心
     this.matcher = createMatcher(options.routes || [], this)
@@ -51,6 +57,7 @@ export default class VueRouter {
     let mode = options.mode || 'hash'
     this.fallback =
       mode === 'history' && !supportsPushState && options.fallback !== false
+      // 路由回退策略
     if (this.fallback) {
       mode = 'hash'
     }
@@ -76,18 +83,21 @@ export default class VueRouter {
     }
   }
 
-  /** *
+  /***
    * 根据地址，当前路由
    */
   match (raw: RawLocation, current?: Route, redirectedFrom?: Location): Route {
     return this.matcher.match(raw, current, redirectedFrom)
   }
 
+  /***
+   * 获取当前历史记录的路线
+   */
   get currentRoute (): ?Route {
     return this.history && this.history.current
   }
 
-  /** *
+  /***
    * 每个Vue实例都会调用
    */
   init (app: any /* Vue component instance */) {

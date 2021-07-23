@@ -44,12 +44,24 @@ const router = new VueRouter({
   linkActiveClass: 'jmz',
   linkExactActiveClass: 'jmzExact',
   routes: [
-    { path: '/', component: Home, children: [
-      {
-        path: '/jmz', component: Home
-      }
-    ] },
-    { path: '/foo', component: Foo },
+    {
+      path: '/', alias:'/root', component: Home, children: [
+        {
+          path: '/jmz', component: Home
+        }
+      ]
+    },
+    {
+      path: '/foo', component: Foo, children: [
+        {
+          path: '/f1', component: Foo, children: [
+            {
+              path: '/f2', component: Foo
+            }
+          ]
+        }
+      ]
+    },
     { path: '/bar', component: Bar },
     { path: encodeURI('/é'), component: Unicode },
     { path: '/query/:q', component: Query }
@@ -102,11 +114,11 @@ const vueInstance = new Vue({
       <router-view class="view"></router-view>
     </div>
   `,
-  created () {
+  created() {
     console.log(this.$route)
   },
   methods: {
-    navigateAndIncrement () {
+    navigateAndIncrement() {
       const increment = () => this.n++
       if (this.$route.path === '/') {
         this.$router.push('/foo', increment)
@@ -114,7 +126,7 @@ const vueInstance = new Vue({
         this.$router.push('/', increment)
       }
     },
-    gotoComponent () {
+    gotoComponent() {
       this.$router.push('/foo')
     }
   }

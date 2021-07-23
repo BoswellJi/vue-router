@@ -3,7 +3,11 @@ import VueRouter from 'vue-router'
 
 Vue.use(VueRouter)
 
-const Foo = { template: `<div class="foo"><h1>foo</h1></div>` }
+const Foo = { 
+  template: `<div class="foo"><h1>foo</h1></div>`,
+  created(){
+  }
+ }
 const Bar = { template: `<div class="bar"><h1>bar</h1></div>` }
 
 const childRouter = new VueRouter({
@@ -37,6 +41,9 @@ const router = new VueRouter({
 })
 
 new Vue({
+  components:{
+    Foo
+  },
   router,
   template: `
     <div id="app">

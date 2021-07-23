@@ -7,12 +7,10 @@ import { extend } from './misc'
 
 // 是否支持pushState方法
 export const supportsPushState =
-  // 浏览器中
   inBrowser &&
   (function () {
     const ua = window.navigator.userAgent
 
-    // 判断用户代理排除，是android 2. 或者 android 4.0  并且
     if (
       (ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) &&
       ua.indexOf('Mobile Safari') !== -1 &&
